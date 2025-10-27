@@ -1,3 +1,6 @@
+#ifndef OO_STDLIB_H
+#define OO_STDLIB_H
+
 #include <inttypes.h> // PRIx64, uint64_t, int64_t
 #include <stdio.h>    // printf
 
@@ -9,3 +12,5 @@ static inline void bitfield_print(bitfield self) {
     // Print using "0x" prefix and 16 hex digits
     printf("%#018" PRIx64 "\n", self);
 }
+
+#endif /* OO_STDLIB_H */
