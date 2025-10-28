@@ -3,8 +3,7 @@
 
 int main() {
     // let bf: bitfield = 0x12
-    bitfield_box* bf = (bitfield_box*) oo_alloc(__oo_ISOLATED, &__bitfield_box_info);
-    bf->boxed = 0x12;
+    box* bf = (box*) __oo_make_box(0x12, &__bitfield_box_info);
 
     // print bf
     print_desc(bf);

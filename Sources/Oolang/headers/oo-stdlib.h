@@ -5,13 +5,19 @@
 #include <stdio.h>    // printf
 #include "oo-string.h"
 
-typedef int64_t integer;
-
-typedef struct integer_box
+typedef struct box
 {
     __oo_rc_header header;
-    integer boxed;
-} integer_box;
+    size_t boxed;
+} box;
+
+box* __oo_make_box(size_t value, __oo_struct_type* type) {
+    box* b = oo_alloc(__oo_ISOLATED, type);
+    b->boxed = value;
+    return b;
+}
+
+typedef int64_t integer;
 
 // model integer: HasStringRepresentation {
 //     func toString() { ... }
@@ -20,26 +26,20 @@ static inline string* const integer_toString(integer const self) {
     return string_format("%" PRId64, self);
 }
 static inline string* integer_box_toString(void* self) {
-    return integer_toString(((integer_box*)self)->boxed);
+    return integer_toString(((box*)self)->boxed);
 }
 static const HasStringRepresentation_vtable integer_HasStringRepresentation_vtable = {
     .toString = integer_box_toString
 };
 
 static __oo_struct_type __integer_box_info = {
-    .size = sizeof(integer_box),
+    .size = sizeof(box),
     .trait_descs = (__oo_trait_descriptor*[]) { &HasStringRepresentation_trait },
     .trait_vtables = (void*[]) { &integer_HasStringRepresentation_vtable },
     .trait_count = 1
 };
 
 typedef uint64_t bitfield;
-
-typedef struct bitfield_box
-{
-    __oo_rc_header header;
-    bitfield boxed;
-} bitfield_box;
 
 // model bitfield: HasStringRepresentation {
 //     func toString() { ... }
@@ -48,14 +48,14 @@ static inline string* const bitfield_toString(bitfield const self) {
     return string_format("%018#" PRIx64, self);
 }
 static inline string* bitfield_box_toString(void* self) {
-    return bitfield_toString(((bitfield_box*)self)->boxed);
+    return bitfield_toString(((box*)self)->boxed);
 }
 static const HasStringRepresentation_vtable bitfield_HasStringRepresentation_vtable = {
     .toString = bitfield_box_toString
 };
 
 static __oo_struct_type __bitfield_box_info = {
-    .size = sizeof(bitfield_box),
+    .size = sizeof(box),
     .trait_descs = (__oo_trait_descriptor*[]) { &HasStringRepresentation_trait },
     .trait_vtables = (void*[]) { &bitfield_HasStringRepresentation_vtable },
     .trait_count = 1

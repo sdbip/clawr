@@ -22,15 +22,13 @@ int main() {
     x->Struct.value = 2;
 
 //        print y.value
-    integer_box* yValue = oo_alloc(__oo_ISOLATED, &__integer_box_info);
-    yValue->boxed = y->Struct.value;
-    print_desc(yValue);
-    yValue = oo_release(yValue);
+    box* ybox = __oo_make_box(y->Struct.value, &__integer_box_info);
+    print_desc(ybox);
+    ybox = oo_release(ybox);
 
-    integer_box* xValue = oo_alloc(__oo_ISOLATED, &__integer_box_info);
-    xValue->boxed = x->Struct.value;
-    print_desc(xValue);
-    xValue = oo_release(xValue);
+    box* xbox = __oo_make_box(x->Struct.value, &__integer_box_info);
+    print_desc(xbox);
+    xbox = oo_release(xbox);
 
     x = oo_release(&x->header);
     y = oo_release(&y->header);

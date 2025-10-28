@@ -3,8 +3,7 @@
 
 int main() {
     // let i: integer = 42
-    integer_box* i = (integer_box*) oo_alloc(__oo_ISOLATED, &__integer_box_info);
-    i->boxed = 42;
+    box* i = (box*) __oo_make_box(42, &__integer_box_info);
 
     // print i
     print_desc(i);
