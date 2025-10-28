@@ -4,6 +4,7 @@
 #include <stdarg.h>   // va_list, va_start, va_end
 #include <stdio.h>    // vsnprintf
 #include <stdlib.h>   // malloc, size_t, NULL
+#include "oo-alloc.h"
 
 typedef struct string {
     int length;
@@ -16,11 +17,7 @@ static inline string* string_format(const char* const format, ...) {
 
     // Determine the required buffer size
     int length = vsnprintf(NULL, 0, format, args) + 1;
-    string* s = (string*)malloc(sizeof(string) + length);
-    if (s == NULL) {
-        va_end(args);
-        return NULL; // Handle memory allocation failure
-    }
+    string* s = (string*)__oo_alloc(sizeof(string) + length);
 
     // Format the string into the buffer
     vsnprintf(s->buffer, length, format, args);
