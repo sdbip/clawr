@@ -5,11 +5,42 @@
 #include <stdio.h>    // printf
 #include "oo-string.h"
 
+// trait HasStringRepresentation {
+//     func toString() -> string
+// }
+typedef struct HasStringRepresentation_vtable {
+    string* (*toString)(void* self);
+} HasStringRepresentation_vtable;
+
+static const __oo_trait_descriptor HasStringRepresentation_trait = { .name = "HasStringRepresentation" };
+
 typedef int64_t integer;
 
+typedef struct integer_box
+{
+    __oo_rc_header header;
+    integer boxed;
+} integer_box;
+
+// model integer: HasStringRepresentation {
+//     func toString() { ... }
+// }
 static inline string* const integer_toString(integer const self) {
     return string_format("%" PRId64, self);
 }
+static inline string* integer_box_toString(void* self) {
+    return integer_toString(((integer_box*)self)->boxed);
+}
+static const HasStringRepresentation_vtable integer_HasStringRepresentation_vtable = {
+    .toString = integer_box_toString
+};
+
+static __oo_struct_type __integer_box_info = {
+    .size = sizeof(integer_box),
+    .trait_descs = (__oo_trait_descriptor*[]) { &HasStringRepresentation_trait },
+    .trait_vtables = (void*[]) { &integer_HasStringRepresentation_vtable },
+    .trait_count = 1
+};
 
 typedef uint64_t bitfield;
 

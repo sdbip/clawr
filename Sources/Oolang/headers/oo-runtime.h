@@ -38,6 +38,12 @@ enum {
     __oo_REFC_BM      = INT64_MAX,
 };
 
+/// @brief Descriptor for a trait. The address of a descriptor is a unique identifier
+/// for a trait at compile-time; user code should define one static descriptor per trait.
+typedef struct __oo_trait_descriptor {
+    const char* name;
+} __oo_trait_descriptor;
+
 /// @brief Information about an entity’s type (`struct` or `object`)
 /// This should include:
 /// - inheritance and conformance information
@@ -46,6 +52,13 @@ enum {
 typedef struct __oo_struct_type {
     /// @brief The size of the entity payload for this type
     size_t size;
+
+    /// @brief Parallel arrays describing implemented traits for this type.
+    /// `trait_descs[i]` is a pointer to the compile-time `__oo_trait_descriptor` for a trait
+    /// and `trait_vtables[i]` is the vtable implementation for that trait for this type.
+    const __oo_trait_descriptor** trait_descs;
+    void** trait_vtables;
+    size_t trait_count;
 } __oo_struct_type;
 
 /// A header that is prefixed on all programmer types
@@ -59,6 +72,23 @@ typedef struct __oo_rc_header {
 } __oo_rc_header;
 
 // -------- Implementation -------- ||
+
+/// @brief Lookup a trait vtable for an entity at runtime
+/// @param self pointer to the entity (must start with __oo_rc_header)
+/// @param trait pointer to the trait descriptor to look up
+/// @return the vtable pointer for the trait if implemented, otherwise NULL
+static inline void* __oo_trait_vtable(__oo_rc_header* header, const __oo_trait_descriptor* trait) {
+    if (!header || !trait) return NULL;
+    __oo_struct_type* typeInfo = header->is_a;
+    if (!typeInfo || !typeInfo->trait_descs || !typeInfo->trait_vtables) return NULL;
+
+    for (size_t i = 0; i < typeInfo->trait_count; i++) {
+        if (typeInfo->trait_descs[i] == trait) {
+            return typeInfo->trait_vtables[i];
+        }
+    }
+    return NULL;
+}
 
 /// @brief Allocate reference-counted entity in memory
 /// @param semantics the semantics, copy or reference, to apply when assigning and modifying the entity
