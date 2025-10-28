@@ -30,7 +30,7 @@ typedef enum {
     __oo_REFERENCE,
     /// @brief Isolation Semantics (`let`, `mut` variable) - Variables modified independently
     __oo_ISOLATED,
-} __oo_Semantics;
+} __oo_var_semantics;
 
 enum {
     // Assuming 64-bit registers
@@ -43,28 +43,28 @@ enum {
 /// - inheritance and conformance information
 /// - method lookup table if `object` type
 /// - field layout info if `struct` type
-typedef struct __oo_TypeInfo {
+typedef struct __oo_struct_type {
     /// @brief The size of the entity payload for this type
     size_t size;
-} __oo_TypeInfo;
+} __oo_struct_type;
 
 /// A header that is prefixed on all programmer types
-typedef struct __oo_Header {
+typedef struct __oo_rc_header {
     /// @brief Copy or reference + Polymorphism or data semantics
-    __oo_Semantics semantics;
+    __oo_var_semantics semantics;
     /// @brief Reference counter
     atomic_uintptr_t refs;
     /// @brief Pointer to type data
-    __oo_TypeInfo* is_a;
-} __oo_Header;
+    __oo_struct_type* is_a;
+} __oo_rc_header;
 
 // -------- Implementation -------- ||
 
 /// @brief Allocate reference-counted entity in memory
 /// @param semantics the semantics, copy or reference, to apply when assigning and modifying the entity
 /// @param typeInfo pointer to an object that represents the entity’s type
-static inline void* oo_alloc(__oo_Semantics const semantics, __oo_TypeInfo* const typeInfo) {
-    __oo_Header* const header = (__oo_Header*)__oo_alloc(typeInfo->size);
+static inline void* oo_alloc(__oo_var_semantics const semantics, __oo_struct_type* const typeInfo) {
+    __oo_rc_header* const header = (__oo_rc_header*)__oo_alloc(typeInfo->size);
     header->semantics = semantics;
     header->is_a = typeInfo;
     atomic_init(&header->refs, 1);
@@ -73,7 +73,7 @@ static inline void* oo_alloc(__oo_Semantics const semantics, __oo_TypeInfo* cons
 
 /// @brief Increment a reference counter
 /// @param header the header of the entity to retain
-static inline __oo_Header* oo_retain(__oo_Header* const header) {
+static inline __oo_rc_header* oo_retain(__oo_rc_header* const header) {
     if (header) atomic_fetch_add_explicit(&header->refs, 1, memory_order_relaxed);
     return header;
 }
@@ -82,7 +82,7 @@ static inline __oo_Header* oo_retain(__oo_Header* const header) {
 /// If the reference counter becomes zero, the entity is descoped
 /// @param header the header of the entity to release
 /// @returns `NULL` so that the variable can be assigned to the function call.
-static inline void* oo_release(__oo_Header* const header) {
+static inline void* oo_release(__oo_rc_header* const header) {
     if (header && (atomic_fetch_sub_explicit(&header->refs, 1, memory_order_acq_rel) & __oo_REFC_BM) == 1) {
         free(header);
     }
@@ -104,7 +104,7 @@ static inline void* oo_release(__oo_Header* const header) {
 /// // Make isolated changes to x
 /// ```
 /// @endcode
-static inline void* oo_preModify(__oo_Header* const header) {
+static inline void* oo_preModify(__oo_rc_header* const header) {
     if (!header) return NULL;
     if (header->semantics == __oo_REFERENCE) {
         // No copy for reference semantics
@@ -125,8 +125,8 @@ static inline void* oo_preModify(__oo_Header* const header) {
     }
 
     // Copy payload for copy semantics with shared ownership
-    __oo_TypeInfo* const typeInfo = header->is_a;
-    __oo_Header* const newEntity = (__oo_Header*)__oo_alloc(typeInfo->size);
+    __oo_struct_type* const typeInfo = header->is_a;
+    __oo_rc_header* const newEntity = (__oo_rc_header*)__oo_alloc(typeInfo->size);
     memcpy(newEntity, header, typeInfo->size);
     atomic_init(&newEntity->refs, 1);
 

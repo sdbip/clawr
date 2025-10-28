@@ -4,10 +4,10 @@
 //        struct Struct { value: integer }
 struct __Struct_data { int64_t value; };
 typedef struct Struct {
-    struct __oo_Header header;
+    struct __oo_rc_header header;
     struct __Struct_data Struct;
 } Struct;
-__oo_TypeInfo __Struct_info = {.size = sizeof(Struct)};
+__oo_struct_type __Struct_info = {.size = sizeof(Struct)};
 
 int main() {
 //        mut x: Struct = { value: 42 }
@@ -23,12 +23,11 @@ int main() {
 
 //        print y.value
     string* sy = integer_toString(y->Struct.value);
-    string* sx = integer_toString(x->Struct.value);
     print(sy);
-    print(sx);
-
-    free(sx);
     free(sy);
+    string* sx = integer_toString(x->Struct.value);
+    print(sx);
+    free(sx);
 
     x = oo_release(&x->header);
     y = oo_release(&y->header);
