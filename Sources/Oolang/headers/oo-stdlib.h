@@ -5,15 +5,6 @@
 #include <stdio.h>    // printf
 #include "oo-string.h"
 
-// trait HasStringRepresentation {
-//     func toString() -> string
-// }
-typedef struct HasStringRepresentation_vtable {
-    string* (*toString)(void* self);
-} HasStringRepresentation_vtable;
-
-static const __oo_trait_descriptor HasStringRepresentation_trait = { .name = "HasStringRepresentation" };
-
 typedef int64_t integer;
 
 typedef struct integer_box

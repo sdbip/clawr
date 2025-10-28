@@ -35,10 +35,29 @@ static inline string* string_format(const char* const format, ...) {
     return s;
 }
 
+// trait HasStringRepresentation {
+//     func toString() -> string
+// }
+typedef struct HasStringRepresentation_vtable {
+    string* (*toString)(void* self);
+} HasStringRepresentation_vtable;
+
 /// @brief Print a string value to stdout
 /// @param s the string value
 static inline void print(string* const s) {
     printf("%s\n", s->data.buffer);
+}
+
+static const __oo_trait_descriptor HasStringRepresentation_trait = { .name = "HasStringRepresentation" };
+
+/// @brief Print a string value to stdout
+/// @param s the string value
+static inline void print_desc(string* const i) {
+    HasStringRepresentation_vtable* vtable =
+        (HasStringRepresentation_vtable*) __oo_trait_vtable(&i->header, &HasStringRepresentation_trait);
+    string* s = vtable->toString(i);
+    print(s);
+    s = oo_release(&s->header);
 }
 
 #endif /*.OO_STRING_H */
