@@ -5,6 +5,12 @@
 #include <stdio.h>    // printf
 #include "oo-string.h"
 
+typedef int64_t integer;
+
+static inline string* const integer_toString(integer const self) {
+    return string_format("%" PRId64, self);
+}
+
 typedef uint64_t bitfield;
 
 static inline string* const bitfield_toString(bitfield const self) {
