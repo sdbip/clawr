@@ -5,6 +5,6 @@ int main() {
     // print 0x0012
     string* const s = bitfield_toString(0x0012);
     print(s);
-    free(s);
+    oo_release(s);
     return 0;
 }

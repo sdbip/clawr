@@ -5,6 +5,6 @@ int main() {
 //        print 42
     string* const s = integer_toString(42);
     print(s);
-    free(s);
+    oo_release(s);
     return 0;
 }
