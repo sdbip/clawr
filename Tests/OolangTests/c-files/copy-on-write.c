@@ -22,12 +22,15 @@ int main() {
     x->Struct.value = 2;
 
 //        print y.value
-    string* sy = integer_toString(y->Struct.value);
-    print(sy);
-    sy = oo_release(sy);
-    string* sx = integer_toString(x->Struct.value);
-    print(sx);
-    sx = oo_release(sx);
+    integer_box* yValue = oo_alloc(__oo_ISOLATED, &__integer_box_info);
+    yValue->boxed = y->Struct.value;
+    print_desc(yValue);
+    yValue = oo_release(yValue);
+
+    integer_box* xValue = oo_alloc(__oo_ISOLATED, &__integer_box_info);
+    xValue->boxed = x->Struct.value;
+    print_desc(xValue);
+    xValue = oo_release(xValue);
 
     x = oo_release(&x->header);
     y = oo_release(&y->header);

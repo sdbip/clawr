@@ -52,11 +52,11 @@ static const __oo_trait_descriptor HasStringRepresentation_trait = { .name = "Ha
 
 /// @brief Print a string value to stdout
 /// @param s the string value
-static inline void print_desc(string* const i) {
+static inline void print_desc(__oo_rc_header* const i) {
     HasStringRepresentation_vtable* vtable =
-        (HasStringRepresentation_vtable*) __oo_trait_vtable(&i->header, &HasStringRepresentation_trait);
+        (HasStringRepresentation_vtable*) __oo_trait_vtable(i, &HasStringRepresentation_trait);
     string* s = vtable->toString(i);
-    print(s);
+    printf("%s\n", s->data.buffer);
     s = oo_release(&s->header);
 }
 

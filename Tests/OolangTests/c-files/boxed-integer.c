@@ -6,13 +6,9 @@ int main() {
     integer_box* i = (integer_box*) oo_alloc(__oo_ISOLATED, &__integer_box_info);
     i->boxed = 42;
 
-    // print i as HasStringRepresentation
-    HasStringRepresentation_vtable* vtable =
-        (HasStringRepresentation_vtable*) __oo_trait_vtable(&i->header, &HasStringRepresentation_trait);
-    string* s = vtable->toString(i);
-    print(s);
+    // print i
+    print_desc(i);
 
-    s = oo_release(&s->header);
     i = oo_release(&i->header);
     return 0;
 }
