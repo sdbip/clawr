@@ -9,7 +9,7 @@ static inline void* __oo_alloc(size_t size) {
     if (memory == NULL) {
         // TODO: Allow user to manage memory.
         fprintf(stderr, "Out of memory!");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     return memory;
 }
