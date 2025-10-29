@@ -14,4 +14,24 @@ struct CodegenTests {
             } Struct;
             """)
     }
+
+    @Test("Generates trait implementation code")
+    func trait() async throws {
+        let output = codegen(ir: .traitImplementations(target: "Struct", traits: [Trait(name: "HasStringRepresentation", methods: ["toString"])]))
+        #expect(output == """
+            HasStringRepresentation_vtable Struct_HasStringRepresentation_vtable = {
+                .toString = Struct_toString
+            };
+
+            __oo_data_type __Struct_data_type = {
+                .size = sizeof(Struct),
+                .trait_descs = (__oo_trait_descriptor*[]) { &HasStringRepresentation_trait },
+                .trait_vtables = (void*[]) { &Struct_HasStringRepresentation_vtable },
+                .trait_count = 1
+            };
+            __oo_type_info __Struct_info = {
+                .data = &__Struct_data_type
+            };
+            """)
+    }
 }
