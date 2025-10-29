@@ -47,7 +47,7 @@ typedef struct __oo_trait_descriptor {
 /// This should include:
 /// - inheritance and conformance information
 /// - method lookup table if `object` type
-/// - field layout info if `struct` type
+/// - field layout info if `data` type
 typedef struct __oo_data_type {
 
     /// @brief The size of the entity payload for this type, and its semantics

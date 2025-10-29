@@ -7,6 +7,9 @@
 #include "oo-alloc.h"
 #include "oo-runtime.h"
 
+// data string {
+//     length: integer
+// }
 struct __string_data {
     size_t length;
     char buffer[];
@@ -15,7 +18,7 @@ typedef struct string {
     struct __oo_rc_header header;
     struct __string_data data;
 } string;
-static const __oo_data_type __string_data_type = { .size = sizeof(string) };
+static __oo_data_type __string_data_type = { .size = sizeof(string) };
 static const __oo_type_info __string_info = { .data = &__string_data_type };
 
 static inline string* string_format(const char* const format, ...) {
