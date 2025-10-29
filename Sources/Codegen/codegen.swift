@@ -8,6 +8,15 @@ public func codegen(ir: IR) -> String {
                 struct __\(name)_data \(name)Data;
             } \(name);
             """
+    case .traitDeclaration(name: let name, methods: let methods):
+        return """
+            typedef struct \(name)_vtable {
+                \(methods.map {
+                    "\($0.returnType) (*\($0.name))(\($0.parameters.map { "\($0.type) \($0.name)" }.joined(separator: ", ")));"
+                }.joined(separator: "\n    "))
+            } \(name)_vtable;
+            static const __oo_trait_descriptor \(name)_trait = { .name = "\(name)" };
+            """
     case .traitImplementations(target: let target, traits: let traits):
         return """
             \(traits.map { """

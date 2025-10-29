@@ -15,8 +15,26 @@ struct CodegenTests {
             """)
     }
 
+    @Test("Generates trait declaration code")
+    func trait_declaration() async throws {
+        let output = codegen(ir: .traitDeclaration(
+            name: "HasStringRepresentation",
+            methods: [Function(
+                name: "toString",
+                returnType: "string*",
+                parameters: [Field(type: "void*", name: "self")],
+            )],
+        ))
+        #expect(output == """
+            typedef struct HasStringRepresentation_vtable {
+                string* (*toString)(void* self);
+            } HasStringRepresentation_vtable;
+            static const __oo_trait_descriptor HasStringRepresentation_trait = { .name = "HasStringRepresentation" };
+            """)
+    }
+
     @Test("Generates trait implementation code")
-    func trait() async throws {
+    func trait_conformance() async throws {
         let output = codegen(ir: .traitImplementations(target: "Struct", traits: [Trait(name: "HasStringRepresentation", methods: ["toString"])]))
         #expect(output == """
             HasStringRepresentation_vtable Struct_HasStringRepresentation_vtable = {
