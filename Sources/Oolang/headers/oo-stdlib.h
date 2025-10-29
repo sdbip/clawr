@@ -9,10 +9,10 @@
 typedef struct box
 {
     __oo_rc_header header;
-    size_t boxed;
+    uintptr_t boxed;
 } box;
 
-box* __oo_make_box(size_t value, __oo_struct_type* type) {
+box* __oo_make_box(uintptr_t value, __oo_struct_type* type) {
     box* b = oo_alloc(__oo_ISOLATED, type);
     b->boxed = value;
     return b;
