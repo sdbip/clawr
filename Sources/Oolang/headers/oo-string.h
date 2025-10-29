@@ -58,6 +58,11 @@ static const __oo_trait_descriptor HasStringRepresentation_trait = { .name = "Ha
 static inline void print_desc(__oo_rc_header* const i) {
     HasStringRepresentation_vtable* vtable =
         (HasStringRepresentation_vtable*) __oo_trait_vtable(i, &HasStringRepresentation_trait);
+    if (!vtable) {
+        printf("vtable not found!!");
+        exit(EXIT_FAILURE);
+    }
+
     string* s = vtable->toString(i);
     printf("%s\n", s->data.buffer);
     s = oo_release(s);
