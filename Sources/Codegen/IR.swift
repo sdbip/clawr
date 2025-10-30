@@ -2,6 +2,8 @@ public enum Statement {
     case data(name: String, fields: any Sequence<Field>)
     case traitDeclaration(name: String, methods: [Function])
     case traitImplementations(target: String, traits: [Trait])
+    case variable(String, type: String, initializer: Expression)
+    case assign(String, value: Expression)
     case function(String, returns: String, parameters: [Field], body: [Statement])
     case call(String, arguments: [Expression])
     case `return`(Expression)
@@ -9,6 +11,7 @@ public enum Statement {
 
 public enum Expression {
     case literal(String)
+    case call(String, arguments: [Expression])
 }
 
 public struct Trait {

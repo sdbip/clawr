@@ -47,6 +47,10 @@ public func codegen(statement: Statement) -> String {
             };
             __oo_type_info __\(target)_info = { .data = &__\(target)_data_type };
             """
+    case .variable(let name, type: let type, initializer: let initializer):
+        return "\(type) \(name) = \(codegen(expression: initializer));"
+    case .assign(let name, value: let value):
+        return "\(name) = \(codegen(expression: value));"
     case .function(let name, returns: let type, parameters: let parameters, body: let body):
         return """
             \(type) \(name) (\(parameters.map { "\($0.type) \($0.name)" }.joined(separator: ", "))) {
@@ -63,5 +67,7 @@ public func codegen(statement: Statement) -> String {
 func codegen(expression: Expression) -> String {
     switch expression {
     case .literal(let s): return s
+    case .call(let function, arguments: let arguments):
+        return "\(function)(\(arguments.map(codegen(expression:)).joined(separator: ",")));"
     }
 }
