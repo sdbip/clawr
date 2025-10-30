@@ -20,30 +20,25 @@ public func codegen(statement: Statement) -> String {
                 struct __\(name)_data \(name)Data;
             } \(name);
             """
-    case .traitDeclaration(name: let name, methods: let methods):
+    case .vtable(let name, methods: let methods):
         return """
             typedef struct \(name)_vtable {
                 \(methods.map {
                     "\($0.returnType) (*\($0.name))(\($0.parameters.map { "\($0.type) \($0.name)" }.joined(separator: ", ")));"
                 }.joined(separator: "\n    "))
             } \(name)_vtable;
+            """
+    case .traitDescriptor(name: let name):
+        return """
             static const __oo_trait_descriptor \(name)_trait = { .name = "\(name)" };
             """
-    case .traitConformances(target: let target, traits: let traits):
+    case .dataType(target: let target, traits: let traits):
         return """
-            \(traits.map { """
-                \($0.name)_vtable \(target)_\($0.name)_vtable = {
-                    \($0.methods.map {
-                        ".\($0) = \(target)_\($0)"
-                    }.joined(separator: "\n    "))
-                };
-                """ }.joined(separator: "\n"))
-
             __oo_data_type __\(target)_data_type = {
                 .size = sizeof(\(target)),
                 .trait_descs = (__oo_trait_descriptor*[]) { \( traits.map { "&\($0.name)_trait" }.joined(separator: ", ") ) },
                 .trait_vtables = (void*[]) { \( traits.map { "&\(target)_\($0.name)_vtable" }.joined(separator: ", ") ) },
-                .trait_count = 1
+                .trait_count = 1,
             };
             __oo_type_info __\(target)_info = { .data = &__\(target)_data_type };
             """
@@ -66,6 +61,14 @@ public func codegen(statement: Statement) -> String {
 
 func codegen(expression: Expression) -> String {
     switch expression {
+    case .vtable(methods: let methods):
+        return """
+            {
+            \(methods.map {
+                ".\($0.name) = \(codegen(expression: .reference($0.reference))),"
+            }.joined())
+            }
+            """
     case .literal(let s): return s
     case .reference(.cast(let reference, type: let type)):
         return "(\(type))\(codegen(expression: .reference(reference)))"

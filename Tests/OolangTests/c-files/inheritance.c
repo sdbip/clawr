@@ -21,8 +21,8 @@ typedef struct __Super_vtable {
 } __Super_vtable;
 
 // factory: func new(value: integer) => { value: value }
-void* Super_new_value(void* self, integer value) {
-    ((Super*)self)->Super.value = value;
+void* Super_new_value(Super* self, integer value) {
+    self->Super.value = value;
 }
 
 // func setValue(_ value: integer) { self.value = value }

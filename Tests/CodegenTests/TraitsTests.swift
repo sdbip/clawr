@@ -74,7 +74,17 @@ struct TraitsTests {
                         .return(.literal("result")),
                     ]
                 ),
-                .traitConformances(
+                .variable(
+                    "Struct_HasStringRepresentation_vtable", 
+                    type: "HasStringRepresentation_vtable", 
+                    initializer: .vtable(methods: [
+                        NamedReference(
+                            name: "toString", 
+                            reference: .name("Struct_toString")
+                        )
+                    ])
+                ),
+                .dataType(
                     target: "Struct",
                     traits: [Trait(
                         name: "HasStringRepresentation",
