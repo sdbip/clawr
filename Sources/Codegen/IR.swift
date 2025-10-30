@@ -1,7 +1,13 @@
-public enum IR {
+public enum Statement {
     case data(name: String, fields: any Sequence<Field>)
     case traitDeclaration(name: String, methods: [Function])
     case traitImplementations(target: String, traits: [Trait])
+    case function(String, returns: String, parameters: [Field], body: [Statement])
+    case `return`(Expression)
+}
+
+public enum Expression {
+    case literal(String)
 }
 
 public struct Trait {

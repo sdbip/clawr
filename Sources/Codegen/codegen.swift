@@ -1,9 +1,17 @@
-public func codegen(ir: [IR]) -> String {
-    return ir.map(codegen(ir:)).joined(separator: "\n")
+public func codegen(ir: [Statement]) -> String {
+    return """
+        #include "oo-stdlib.h"
+        #include "oo-runtime.h"
+
+        \(
+            ir.map(codegen(statement:))
+                .joined(separator: "\n")
+        )
+        """
 }
 
-private func codegen(ir: IR) -> String {
-    switch ir {
+public func codegen(statement: Statement) -> String {
+    switch statement {
     case .data(name: let name, fields: let fields):
         return """
             struct __\(name)_data { \( fields.map { "\($0.type) \($0.name);" }.joined()) };
@@ -39,5 +47,19 @@ private func codegen(ir: IR) -> String {
             };
             __oo_type_info __\(target)_info = { .data = &__\(target)_data_type };
             """
+    case .function(let name, returns: let type, parameters: let parameters, body: let body):
+        return """
+            \(type) \(name) (\(parameters.map { "\($0.type) \($0.name)" }.joined(separator: ", "))) {
+                \(body.map(codegen(statement:)).joined(separator: "\n"))
+            }
+            """
+    case .return(let expr):
+        return "return \(codegen(expression: expr));"
+    }
+}
+
+func codegen(expression: Expression) -> String {
+    switch expression {
+    case .literal(let s): return s
     }
 }
