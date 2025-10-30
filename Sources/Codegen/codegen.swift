@@ -53,6 +53,8 @@ public func codegen(statement: Statement) -> String {
                 \(body.map(codegen(statement:)).joined(separator: "\n"))
             }
             """
+    case .call(let function, arguments: let arguments):
+        return "\(function)(\(arguments.map(codegen(expression:)).joined(separator: ",")));"
     case .return(let expr):
         return "return \(codegen(expression: expr));"
     }
