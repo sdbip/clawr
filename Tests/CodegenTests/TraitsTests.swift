@@ -35,7 +35,7 @@ struct TraitsTests {
 
     @Test("Generates trait implementation code")
     func trait_conformance() async throws {
-        let output = codegen(statement: .traitImplementations(target: "Struct", traits: [Trait(name: "HasStringRepresentation", methods: ["toString"])]))
+        let output = codegen(statement: .traitConformances(target: "Struct", traits: [Trait(name: "HasStringRepresentation", methods: ["toString"])]))
         #expect(output == """
             HasStringRepresentation_vtable Struct_HasStringRepresentation_vtable = {
                 .toString = Struct_toString

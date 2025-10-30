@@ -29,7 +29,7 @@ public func codegen(statement: Statement) -> String {
             } \(name)_vtable;
             static const __oo_trait_descriptor \(name)_trait = { .name = "\(name)" };
             """
-    case .traitImplementations(target: let target, traits: let traits):
+    case .traitConformances(target: let target, traits: let traits):
         return """
             \(traits.map { """
                 \($0.name)_vtable \(target)_\($0.name)_vtable = {

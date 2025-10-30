@@ -118,7 +118,7 @@ struct CodegenTests {
                         .return(.literal("result")),
                     ]
                 ),
-                .traitImplementations(
+                .traitConformances(
                     target: "Struct",
                     traits: [Trait(
                         name: "HasStringRepresentation",

@@ -1,7 +1,7 @@
 public enum Statement {
     case data(name: String, fields: any Sequence<Field>)
     case traitDeclaration(name: String, methods: [Function])
-    case traitImplementations(target: String, traits: [Trait])
+    case traitConformances(target: String, traits: [Trait])
     case variable(String, type: String, initializer: Expression)
     case assign(Reference, value: Expression)
     case function(String, returns: String, parameters: [Field], body: [Statement])
