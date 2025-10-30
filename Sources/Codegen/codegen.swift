@@ -49,16 +49,16 @@ public func codegen(statement: Statement) -> String {
             """
     case .variable(let name, type: let type, initializer: let initializer):
         return "\(type) \(name) = \(codegen(expression: initializer));"
-    case .assign(let name, value: let value):
-        return "\(name) = \(codegen(expression: value));"
+    case .assign(let reference, value: let value):
+        return "\(codegen(expression: .reference(reference))) = \(codegen(expression: value));"
     case .function(let name, returns: let type, parameters: let parameters, body: let body):
         return """
             \(type) \(name) (\(parameters.map { "\($0.type) \($0.name)" }.joined(separator: ", "))) {
                 \(body.map(codegen(statement:)).joined(separator: "\n"))
             }
             """
-    case .call(let function, arguments: let arguments):
-        return "\(function)(\(arguments.map(codegen(expression:)).joined(separator: ",")));"
+    case .call(let reference, arguments: let arguments):
+        return "\(codegen(expression: .reference(reference)))(\(arguments.map(codegen(expression:)).joined(separator: ",")));"
     case .return(let expr):
         return "return \(codegen(expression: expr));"
     }
@@ -67,7 +67,13 @@ public func codegen(statement: Statement) -> String {
 func codegen(expression: Expression) -> String {
     switch expression {
     case .literal(let s): return s
-    case .call(let function, arguments: let arguments):
-        return "\(function)(\(arguments.map(codegen(expression:)).joined(separator: ",")));"
+    case .reference(.cast(let reference, type: let type)):
+        return "(\(type))\(codegen(expression: .reference(reference)))"
+    case .reference(.name(let name)):
+        return "\(name)"
+    case .reference(.field(target: let reference, name: let name, isPointer: let isPointer)):
+        return "(\(codegen(expression: .reference(reference))))\(isPointer ? "->" : ".")\(name)"
+    case .call(let reference, arguments: let arguments):
+        return "\(codegen(expression: .reference(reference)))(\(arguments.map(codegen(expression:)).joined(separator: ",")))"
     }
 }

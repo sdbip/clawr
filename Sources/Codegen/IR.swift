@@ -3,15 +3,22 @@ public enum Statement {
     case traitDeclaration(name: String, methods: [Function])
     case traitImplementations(target: String, traits: [Trait])
     case variable(String, type: String, initializer: Expression)
-    case assign(String, value: Expression)
+    case assign(Reference, value: Expression)
     case function(String, returns: String, parameters: [Field], body: [Statement])
-    case call(String, arguments: [Expression])
+    case call(Reference, arguments: [Expression])
     case `return`(Expression)
 }
 
-public enum Expression {
+public indirect enum Expression {
     case literal(String)
-    case call(String, arguments: [Expression])
+    case reference(Reference)
+    case call(Reference, arguments: [Expression])
+}
+
+public indirect enum Reference {
+    case cast(Reference, type: String)
+    case name(String)
+    case field(target: Reference, name: String, isPointer: Bool)
 }
 
 public struct Trait {
