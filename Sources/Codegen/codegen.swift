@@ -12,35 +12,11 @@ public func codegen(ir: [Statement]) -> String {
 
 public func codegen(statement: Statement) -> String {
     switch statement {
-    case .data(name: let name, fields: let fields):
+    case .structDeclaration(let name, fields: let fields):
         return """
-            struct __\(name)_data { \( fields.map { "\($0.type) \($0.name);" }.joined()) };
             typedef struct \(name) {
-                struct __oo_rc_header header;
-                struct __\(name)_data \(name)Data;
+                \( fields.map { "\($0.type) \($0.name);" }.joined())
             } \(name);
-            """
-    case .vtable(let name, methods: let methods):
-        return """
-            typedef struct \(name)_vtable {
-                \(methods.map {
-                    "\($0.returnType) (*\($0.name))(\($0.parameters.map { "\($0.type) \($0.name)" }.joined(separator: ", ")));"
-                }.joined(separator: "\n    "))
-            } \(name)_vtable;
-            """
-    case .traitDescriptor(name: let name):
-        return """
-            static const __oo_trait_descriptor \(name)_trait = { .name = "\(name)" };
-            """
-    case .dataType(target: let target, traits: let traits):
-        return """
-            __oo_data_type __\(target)_data_type = {
-                .size = sizeof(\(target)),
-                .trait_descs = (__oo_trait_descriptor*[]) { \( traits.map { "&\($0.name)_trait" }.joined(separator: ", ") ) },
-                .trait_vtables = (void*[]) { \( traits.map { "&\(target)_\($0.name)_vtable" }.joined(separator: ", ") ) },
-                .trait_count = 1,
-            };
-            __oo_type_info __\(target)_info = { .data = &__\(target)_data_type };
             """
     case .variable(let name, type: let type, initializer: let initializer):
         return "\(type) \(name) = \(codegen(expression: initializer));"
@@ -61,11 +37,11 @@ public func codegen(statement: Statement) -> String {
 
 func codegen(expression: Expression) -> String {
     switch expression {
-    case .vtable(methods: let methods):
+    case .structInitializer(let fields):
         return """
             {
-            \(methods.map {
-                ".\($0.name) = \(codegen(expression: .reference($0.reference))),"
+            \(fields.map {
+                ".\($0.name) = \(codegen(expression: $0.value)),"
             }.joined())
             }
             """

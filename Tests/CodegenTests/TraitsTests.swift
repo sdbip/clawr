@@ -8,9 +8,16 @@ struct TraitsTests {
     func traits() async throws {
         let result = try run(
             ir: [
-                .data(
-                    name: "Struct",
+                .structDeclaration(
+                    "__Struct_data", 
                     fields: [Field(type: "integer", name: "value")]
+                ),
+                .structDeclaration(
+                    "Struct", 
+                    fields: [
+                        Field(type: "__oo_rc_header", name: "header"),
+                        Field(type: "__Struct_data", name: "StructData"),
+                    ]
                 ),
                 .function(
                     "Struct_toString",
@@ -77,19 +84,35 @@ struct TraitsTests {
                 .variable(
                     "Struct_HasStringRepresentation_vtable", 
                     type: "HasStringRepresentation_vtable", 
-                    initializer: .vtable(methods: [
-                        NamedReference(
+                    initializer: .structInitializer([
+                        NamedValue(
                             name: "toString", 
-                            reference: .name("Struct_toString")
+                            value: .reference(.name("Struct_toString"))
                         )
                     ])
                 ),
-                .dataType(
-                    target: "Struct",
-                    traits: [Trait(
-                        name: "HasStringRepresentation",
-                        methods: ["toString"])
-                    ]
+                .variable(
+                    "__Struct_data_type", 
+                    type: "__oo_data_type", 
+                    initializer: .structInitializer([
+                        NamedValue(name: "size", value: .literal("sizeof(Struct)")),
+                        NamedValue(
+                            name: "trait_descs", 
+                            value: .literal("(void*[]) { \( ["HasStringRepresentation_trait"].map { "&\($0)" }.joined(separator: ", ") ) }")
+                        ),
+                        NamedValue(
+                            name: "trait_vtables", 
+                            value: .literal("(void*[]) { \( ["Struct_HasStringRepresentation_vtable"].map { "&\($0)" }.joined(separator: ", ") ) }")
+                        ),
+                        NamedValue(name: "trait_count", value: .literal("1"))
+                    ])
+                ),
+                .variable(
+                    "__Struct_info", 
+                    type: "__oo_type_info", 
+                    initializer: .structInitializer([
+                        NamedValue(name: "data", value: .literal("&__Struct_data_type")),
+                    ])
                 ),
                 exec([
                     .variable(

@@ -1,8 +1,5 @@
 public enum Statement {
-    case data(name: String, fields: any Sequence<Field>)
-    case vtable(String, methods: [Function])
-    case traitDescriptor(name: String)
-    case dataType(target: String, traits: [Trait])
+    case structDeclaration(String, fields: any Sequence<Field>)
     case variable(String, type: String, initializer: Expression)
     case assign(Reference, value: Expression)
     case function(String, returns: String, parameters: [Field], body: [Statement])
@@ -14,7 +11,7 @@ public indirect enum Expression {
     case literal(String)
     case reference(Reference)
     case call(Reference, arguments: [Expression])
-    case vtable(methods: [NamedReference])
+    case structInitializer([NamedValue])
 }
 
 public indirect enum Reference {
@@ -23,13 +20,13 @@ public indirect enum Reference {
     case field(target: Reference, name: String, isPointer: Bool)
 }
 
-public struct NamedReference {
+public struct NamedValue {
     public var name: String
-    public var reference: Reference
+    public var value: Expression
 
-    public init(name: String, reference: Reference) {
+    public init(name: String, value: Expression) {
         self.name = name
-        self.reference = reference
+        self.value = value
     }
 }
 
