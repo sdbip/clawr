@@ -27,4 +27,15 @@ struct PrintStatementTests {
         let declarations = try parse("print true")
         #expect(declarations == [.printStatement(.boolean(true))])
     }
+
+    @Test
+    func multiple_prints() async throws {
+        let source = """
+            print true
+            print false
+            print 42
+        """
+        let declarations = try parse(source)
+        #expect(declarations.count == 3)
+    }
 }

@@ -2,30 +2,33 @@ import Lexer
 
 public func parse(_ source: String) throws -> [Statement] {
     let stream = TokenStream(source: source)
+    var result: [Statement] = []
 
-    if stream.peek()?.value == "print" {
-        let unresolved = try PrintStatement.parse(stream: stream)
-        return [.printStatement(unresolved.expression)]
-    } else {
+    while stream.peek() != nil {
+        if stream.peek()?.value == "print" {
+            let unresolved = try PrintStatement.parse(stream: stream)
+            result.append(.printStatement(unresolved.expression))
+        } else {
+            let unresolved = try VariableDeclaration.parse(stream: stream)
+            guard let resolvedType = unresolved.type.map({ ResolvedType(rawValue: $0.value) }) ?? unresolved.initializer?.value.type else { throw ParserError.unresolvedType(unresolved.name.location) }
 
-        let unresolved = try VariableDeclaration.parse(stream: stream)
-        guard let resolvedType = unresolved.type.map({ ResolvedType(rawValue: $0.value) }) ?? unresolved.initializer?.value.type else { throw ParserError.unresolvedType(unresolved.name.location) }
+            switch (resolvedType, unresolved.initializer) {
+            case (_, nil): break
+            case (.real, let declared) where declared?.value.type == .integer: break
+            case (let a, let b) where a == b?.value.type: break
+            case (let a, .some(let b)):
+                throw ParserError.typeMismatch(declared: a, inferred: b.value.type, location: b.location)
+            }
 
-        switch (resolvedType, unresolved.initializer) {
-        case (_, nil): break
-        case (.real, let declared) where declared?.value.type == .integer: break
-        case (let a, let b) where a == b?.value.type: break
-        case (let a, .some(let b)):
-            throw ParserError.typeMismatch(declared: a, inferred: b.value.type, location: b.location)
+            result.append(.variableDeclaration(
+                unresolved.name.value,
+                semantics: unresolved.semantics.value,
+                type: resolvedType,
+                initializer: unresolved.initializer?.value
+            ))
         }
-
-        return [.variableDeclaration(
-            unresolved.name.value,
-            semantics: unresolved.semantics.value,
-            type: resolvedType,
-            initializer: unresolved.initializer?.value
-        )]
     }
+    return result
 }
 
 public enum ParserError: Error {
