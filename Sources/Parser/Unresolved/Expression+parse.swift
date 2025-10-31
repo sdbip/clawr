@@ -8,13 +8,26 @@ extension Expression {
 
         func expr() throws -> Expression {
             switch token.value {
-            case "true": .boolean(true)
-            case "false": .boolean(false)
-            case let v where v.allSatisfy { $0.isWholeNumber || $0 == "." } && v.contains("."): .real(Double(v)!)
-            case let v where v.allSatisfy { $0.isWholeNumber }: .integer(Int64(v)!)
-            case let v where v.hasPrefix("0x") && v.dropFirst(2).allSatisfy { $0.isHexDigit }: .bitfield(UInt64(v.dropFirst(2), radix: 16)!)
-            case let v where v.hasPrefix("0b") && v.dropFirst(2).allSatisfy { $0 == "1" || $0 == "0" }: .bitfield(UInt64(v.dropFirst(2), radix: 2)!)
-            default: throw ParserError.invalidToken(token)
+            case "true": return .boolean(true)
+            case "false": return .boolean(false)
+            case let v where token.kind == .decimal:
+                if let i = Int64(v.replacing("_", with: "")) {
+                    return .integer(i)
+                } else if let r = Double(v.replacing("_", with: "")) {
+                    return .real(r)
+                }
+                throw ParserError.invalidToken(token)
+
+            case let v where token.kind == .binary:
+                if v.hasPrefix("0x"), let b = UInt64(v.dropFirst(2).replacing("_", with: ""), radix: 16) {
+                    return .bitfield(b)
+                } else if v.hasPrefix("0b"), let b = UInt64(v.dropFirst(2).replacing("_", with: ""), radix: 2) {
+                    return .bitfield(b)
+                }
+                throw ParserError.invalidToken(token)
+
+            default:
+                throw ParserError.invalidToken(token)
             }
         }
     }

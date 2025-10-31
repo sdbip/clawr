@@ -209,6 +209,8 @@ private func kind(for value: String) -> Token.Kind {
         .builtinType
     } else if punctuation.contains(value) {
         .punctuation
+    } else if value.hasPrefix("0x") || value.hasPrefix("0b") {
+        .binary
     } else {
         .identifier
     }
