@@ -20,13 +20,20 @@ extension VariableDeclaration {
             type = nil
         }
         _ = try stream.next().requiring { $0.value == "=" }
-        let initializer = try stream.next().requiring { $0.kind == .decimal }.value
+        let initializerToken = try stream.next().requiring { $0.kind == .decimal }
+        let initializer: Expression
+
+        if initializerToken.value.contains(".") {
+            initializer = .real(Double(initializerToken.value)!)
+        } else {
+            initializer = .integer(Int64(initializerToken.value)!)
+        }
 
         return VariableDeclaration(
             name: name,
             semantics: semantics,
             type: type,
-            initializer: .integer(Int64(initializer)!)
+            initializer: initializer
         )
     }
 }
