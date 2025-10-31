@@ -14,6 +14,7 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "Oolang",
+            dependencies: ["IRGen"],
             resources: [
                 .copy("headers")
             ]
@@ -22,13 +23,18 @@ let package = Package(
             name: "OolangTests",
             dependencies: ["Oolang"],
             resources: [
-                .copy("c-files")
+                .copy("c-files"),
+                .copy("oo-files"),
             ]
         ),
         .target(name: "Codegen"),
         .testTarget(
             name: "CodegenTests",
             dependencies: ["Codegen"]
+        ),
+        .target(
+            name: "IRGen",
+            dependencies: ["Parser", "Codegen"]
         ),
         .target(
             name: "Parser",

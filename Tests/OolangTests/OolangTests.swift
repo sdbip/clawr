@@ -1,19 +1,19 @@
 import Foundation
 import Testing
 
-@Test("Compile and Run C Code", arguments: testInputs())
-func compilation(file: TestInputFile) async throws {
+@Test("Compile and Run C Code", arguments: cInputFiles())
+func compile_c_code(file: TestInputFile) async throws {
     let fm = FileManager.default
 
     let exeFile = file.url.deletingPathExtension()
-    try #require(fm.fileExists(atPath: file.url.path))
+    try #require(fm.fileExists(atPath: file.url.path()))
 
     let (compilerOutput, isCompilerError) = try runExecutable(
         atPath: "/usr/bin/clang",
         arguments: [
-            file.url.path,
-            "-I", Bundle.target.resourceURL!.appending(component: "headers").path,
-            "-o", exeFile.path,
+            file.url.path(),
+            "-I", Bundle.target.resourceURL!.appending(component: "headers").path(),
+            "-o", exeFile.path(),
         ]
     )
 
@@ -22,8 +22,8 @@ func compilation(file: TestInputFile) async throws {
         #expect(isCompilerError)
     } else if let expectedOutput = file.expectedOutput {
         #expect(!isCompilerError, Comment(rawValue: compilerOutput))
-        try #require(fm.fileExists(atPath: file.url.deletingPathExtension().path))
-        let (programOutput, isProgramError) = try runExecutable(atPath: file.url.deletingPathExtension().path, arguments: [])
+        try #require(fm.fileExists(atPath: file.url.deletingPathExtension().path()))
+        let (programOutput, isProgramError) = try runExecutable(atPath: file.url.deletingPathExtension().path(), arguments: [])
         #expect(programOutput == expectedOutput)
         #expect(!isProgramError)
     } else {
@@ -31,10 +31,54 @@ func compilation(file: TestInputFile) async throws {
     }
 }
 
-private func testInputs() -> [TestInputFile] {
+private func cInputFiles() -> [TestInputFile] {
     let resourceURL = Bundle.module.resourceURL!
     return try! FileManager.default.contentsOfDirectory(at: resourceURL.appending(component: "c-files"), includingPropertiesForKeys: [])
         .filter { $0.pathExtension == "c" }
+        .map {
+            let name = $0.deletingPathExtension().lastPathComponent
+                .replacing("-", with: " ")
+                //.replacing(/\b(\w)/) { $0.output.1.uppercased() }
+            return TestInputFile(
+                description: name,
+                url: $0)
+            }
+}
+
+@Test("Compile and Run Oolang Code", arguments: oolangInputFiles())
+func compile_oolang_code(file: TestInputFile) async throws {
+    let fm = FileManager.default
+
+    let exeFile = file.url.deletingPathExtension()
+    try #require(fm.fileExists(atPath: file.url.path()))
+
+    let oocURL = Bundle.module.bundleURL
+        .deletingLastPathComponent()
+        .appending(component: "ooc")
+
+    let (compilerOutput, isCompilerError) = try runExecutable(
+        atPath: oocURL.path(),
+        arguments: [file.url.path()]
+    )
+
+    if let expectedError = file.expectedError {
+        #expect(compilerOutput == expectedError)
+        #expect(isCompilerError)
+    } else if let expectedOutput = file.expectedOutput {
+        #expect(!isCompilerError, Comment(rawValue: compilerOutput))
+        try #require(fm.fileExists(atPath: file.url.deletingPathExtension().path()))
+        let (programOutput, isProgramError) = try runExecutable(atPath: file.url.deletingPathExtension().path(), arguments: [])
+        #expect(programOutput == expectedOutput)
+        #expect(!isProgramError)
+    } else {
+        #expect(!isCompilerError, Comment(rawValue: compilerOutput))
+    }
+}
+
+private func oolangInputFiles() -> [TestInputFile] {
+    let resourceURL = Bundle.module.resourceURL!
+    return try! FileManager.default.contentsOfDirectory(at: resourceURL.appending(component: "oo-files"), includingPropertiesForKeys: [])
+        .filter { $0.pathExtension == "oo" }
         .map {
             let name = $0.deletingPathExtension().lastPathComponent
                 .replacing("-", with: " ")
@@ -68,13 +112,13 @@ struct TestInputFile: CustomStringConvertible {
 
     var expectedError: String? {
         let errURL = url.deletingPathExtension().appendingPathExtension("err")
-        guard FileManager.default.fileExists(atPath: errURL.path) else { return nil }
+        guard FileManager.default.fileExists(atPath: errURL.path()) else { return nil }
         return try! String(contentsOf: errURL, encoding: .utf8)
     }
 
     var expectedOutput: String? {
         let outURL = url.deletingPathExtension().appendingPathExtension("out")
-        guard FileManager.default.fileExists(atPath: outURL.path) else { return nil }
+        guard FileManager.default.fileExists(atPath: outURL.path()) else { return nil }
         return try! String(contentsOf: outURL, encoding: .utf8)
     }
 }

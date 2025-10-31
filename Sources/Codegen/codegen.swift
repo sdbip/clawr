@@ -1,5 +1,9 @@
 public func codegen(ir: [Statement]) -> String {
     return """
+        #pragma GCC diagnostic ignored "-Wincompatible-pointer-types-discards-qualifiers"
+        #pragma GCC diagnostic ignored "-Wincompatible-function-pointer-types"
+        #pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
+
         #include "oo-stdlib.h"
         #include "oo-runtime.h"
 
