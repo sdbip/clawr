@@ -5,6 +5,10 @@ struct PrintStatement {
 }
 
 extension PrintStatement {
+    static func isNext(in stream: TokenStream) -> Bool {
+        return stream.peek()?.value == "print"
+    }
+
     init(parsing stream: TokenStream) throws {
         _ = try stream.next().requiring { $0.value == "print" }
         try self.init(expression: Expression.parse(stream: stream).value)

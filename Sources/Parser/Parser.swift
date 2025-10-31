@@ -5,10 +5,10 @@ public func parse(_ source: String) throws -> [Statement] {
     var result: [Statement] = []
 
     while stream.peek() != nil {
-        if stream.peek()?.value == "print" {
+        if PrintStatement.isNext(in: stream) {
             let unresolved = try PrintStatement(parsing: stream)
             result.append(.printStatement(unresolved.expression))
-        } else {
+        } else if VariableDeclaration.isNext(in: stream) {
             let unresolved = try VariableDeclaration(parsing: stream)
             guard let resolvedType = unresolved.type.map({ ResolvedType(rawValue: $0.value) }) ?? unresolved.initializer?.value.type else { throw ParserError.unresolvedType(unresolved.name.location) }
 
