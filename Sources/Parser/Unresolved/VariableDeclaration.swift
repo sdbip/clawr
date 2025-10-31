@@ -25,21 +25,7 @@ extension VariableDeclaration {
 
         if stream.peek()?.value == "=" {
             _ = try stream.next().requiring { $0.value == "=" }
-            let initializerToken = try stream.next().required()
-
-            if initializerToken.value == "true" {
-                initializer = .init(value: .boolean(true), location: initializerToken.location)
-            } else if initializerToken.value == "false" {
-                initializer = .init(value: .boolean(false), location: initializerToken.location)
-            } else if initializerToken.value.contains(".") {
-                initializer = .init(value: .real(Double(initializerToken.value)!), location: initializerToken.location)
-            } else if initializerToken.value.hasPrefix("0x") {
-                initializer = .init(value: .bitfield(UInt64(initializerToken.value[initializerToken.value.index(initializerToken.value.startIndex, offsetBy: 2)...], radix: 16)!), location: initializerToken.location)
-            } else if initializerToken.value.hasPrefix("0b") {
-                initializer = .init(value: .bitfield(UInt64(initializerToken.value[initializerToken.value.index(initializerToken.value.startIndex, offsetBy: 2)...], radix: 2)!), location: initializerToken.location)
-            } else {
-                initializer = .init(value: .integer(Int64(initializerToken.value)!), location: initializerToken.location)
-            }
+            initializer = try Expression.parse(stream: stream)
         } else {
             initializer = nil
         }
