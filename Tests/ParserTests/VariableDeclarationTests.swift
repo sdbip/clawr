@@ -1,4 +1,5 @@
 import Testing
+import Lexer
 import Parser
 
 @Suite("Variable Declarations")
@@ -79,8 +80,9 @@ struct VariableDeclarationTests {
     @Test("Type mismatch")
     func type_mismatch() async throws {
         let error = try #require(throws: ParserError.self) { try parse("let x: integer = 2.0") }
-        guard case .typeMismatch(declared: let declared, inferred: let resolved) = error else { Issue.record(); return; }
+        guard case .typeMismatch(declared: let declared, inferred: let resolved, location: let location) = error else { Issue.record(); return; }
         #expect(declared == .integer)
         #expect(resolved == .real)
+        #expect(location == FileLocation(line: 1, column: 18))
     }
 }
