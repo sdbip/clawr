@@ -5,8 +5,8 @@ public func irgen(ast: [Parser.Statement]) -> [Codegen.Statement] {
     var statements: [Codegen.Statement] = []
     for statement in ast {
         switch statement {
-        case .variableDeclaration(let name, semantics: _, type: let type, initializer: let initializer):
-            statements.append(.variable(name, type: type.rawValue, initializer: initializer.map(irgen(expression:)) ?? .literal("NULL")))
+        case .variableDeclaration(let variable, initializer: let initializer):
+            statements.append(.variable(variable.name, type: variable.type.rawValue, initializer: initializer.map(irgen(expression:)) ?? .literal("NULL")))
         case .printStatement(let expression):
             statements.append(.call(.name("print"), arguments: [toString(expression: expression)]))
         }

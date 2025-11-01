@@ -55,9 +55,10 @@ extension VariableDeclaration {
         }
 
         return .variableDeclaration(
-            name.value,
-            semantics: semantics.value,
-            type: resolvedType,
+            Variable(
+                name: name.value,
+                semantics: semantics.value,
+                type: resolvedType),
             initializer: initializer?.value
         )
     }

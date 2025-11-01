@@ -10,7 +10,7 @@ struct VariableDeclarationTests {
         let source = "let x: integer = 2"
         let ast = try parse(source)
         #expect(ast == [
-            .variableDeclaration("x", semantics: .immutable, type: .integer, initializer: .integer(2))
+            .variableDeclaration(Variable(name: "x", semantics: .immutable, type: .integer), initializer: .integer(2))
         ])
     }
 
@@ -19,7 +19,7 @@ struct VariableDeclarationTests {
         let source = "let x = 2"
         let ast = try parse(source)
         #expect(ast == [
-            .variableDeclaration("x", semantics: .immutable, type: .integer, initializer: .integer(2))
+            .variableDeclaration(Variable(name: "x", semantics: .immutable, type: .integer), initializer: .integer(2))
         ])
     }
 
@@ -28,7 +28,7 @@ struct VariableDeclarationTests {
         let source = "let x: real = 2"
         let ast = try parse(source)
         #expect(ast == [
-            .variableDeclaration("x", semantics: .immutable, type: .real, initializer: .integer(2))
+            .variableDeclaration(Variable(name: "x", semantics: .immutable, type: .real), initializer: .integer(2))
         ])
     }
 
@@ -37,7 +37,7 @@ struct VariableDeclarationTests {
         let source = "let x = 2.0"
         let ast = try parse(source)
         #expect(ast == [
-            .variableDeclaration("x", semantics: .immutable, type: .real, initializer: .real(2.0))
+            .variableDeclaration(Variable(name: "x", semantics: .immutable, type: .real), initializer: .real(2.0))
         ])
     }
 
@@ -46,7 +46,7 @@ struct VariableDeclarationTests {
         let source = "let x: boolean = true"
         let ast = try parse(source)
         #expect(ast == [
-            .variableDeclaration("x", semantics: .immutable, type: .boolean, initializer: .boolean(true))
+            .variableDeclaration(Variable(name: "x", semantics: .immutable, type: .boolean), initializer: .boolean(true))
         ])
     }
 
@@ -55,7 +55,7 @@ struct VariableDeclarationTests {
         let source = "let x = false"
         let ast = try parse(source)
         #expect(ast == [
-            .variableDeclaration("x", semantics: .immutable, type: .boolean, initializer: .boolean(false))
+            .variableDeclaration(Variable(name: "x", semantics: .immutable, type: .boolean), initializer: .boolean(false))
         ])
     }
 
@@ -64,7 +64,7 @@ struct VariableDeclarationTests {
         let source = "let x: bitfield = 0x12"
         let ast = try parse(source)
         #expect(ast == [
-            .variableDeclaration("x", semantics: .immutable, type: .bitfield, initializer: .bitfield(0x12))
+            .variableDeclaration(Variable(name: "x", semantics: .immutable, type: .bitfield), initializer: .bitfield(0x12))
         ])
     }
 
@@ -73,7 +73,7 @@ struct VariableDeclarationTests {
         let source = "let x = 0b1010"
         let ast = try parse(source)
         #expect(ast == [
-            .variableDeclaration("x", semantics: .immutable, type: .bitfield, initializer: .bitfield(0b1010))
+            .variableDeclaration(Variable(name: "x", semantics: .immutable, type: .bitfield), initializer: .bitfield(0b1010))
         ])
     }
 
