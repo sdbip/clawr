@@ -44,16 +44,16 @@ extension VariableDeclaration {
     }
 
     func resolve() throws -> Statement {
-        guard let resolvedType = type.map({ ResolvedType(rawValue: $0.value) }) ?? initializer?.value.type else { throw ParserError.unresolvedType(name.location) }
-
-        switch (resolvedType, initializer) {
-        case (_, nil): break
-        case (.real, let declared) where declared?.value.type == .integer: break
-        case (let a, let b) where a == b?.value.type: break
-        case (let a, .some(let b)):
-            throw ParserError.typeMismatch(declared: a, inferred: b.value.type, location: b.location)
+        let resolvedType: ResolvedType?
+        if let initializer {
+            resolvedType = try ResolvedType(resolving: type?.value, expression: initializer)
+        } else if let type = type?.value {
+            resolvedType = ResolvedType(rawValue: type)
+        } else {
+            resolvedType = nil
         }
 
+        guard let resolvedType else { throw ParserError.unresolvedType(name.location) }
         return .variableDeclaration(
             Variable(
                 name: name.value,

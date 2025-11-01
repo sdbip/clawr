@@ -23,3 +23,22 @@ public struct Variable: Equatable {
         self.type = type
     }
 }
+
+extension ResolvedType {
+    init(resolving string: String?, expression: Located<Expression>) throws {
+        let resolved = string.flatMap { ResolvedType(rawValue:$0) }
+        switch (resolved, expression) {
+        case (.real, (.integer(_), _)):
+            self = .real
+
+        case (.some(let type), (let e, _)) where e.type == type:
+            self = type
+
+        case (.some(let t), (let e, let location)):
+            throw ParserError.typeMismatch(declared: t, inferred: e.type, location: location)
+
+        case (.none, (let e, _)):
+            self = e.type
+        }
+    }
+}
