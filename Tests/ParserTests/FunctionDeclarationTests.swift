@@ -83,6 +83,23 @@ struct FunctionDeclarationTests {
         )])
     }
 
+    @Test("Simple parameter without label")
+    func unlabeled_parameter() async throws {
+        let ast = try parse("func f(_ x: integer) {}")
+        #expect(ast == [.functionDeclaration(
+            "f",
+            returns: nil,
+            parameters: [.unlabeled(
+                Variable(
+                    name: "x",
+                    semantics: .immutable,
+                    type: .integer
+                ),
+            )],
+            body: .multipleStatements([])
+        )])
+    }
+
     @Test("Multiple parameters")
     func multiple_parameters_no_body() async throws {
         let ast = try parse("func f(x: integer, y: bitfield) {}")

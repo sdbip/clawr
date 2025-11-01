@@ -99,25 +99,22 @@ func parseParameter(stream: TokenStream) throws -> Labeled<Variable> {
         initializer = nil
     }
 
+    let resolvedType: ResolvedType;
     if let initializer {
-        return try Labeled<Variable>.labeled(
-            Variable(
-                name: name,
-                semantics: .immutable,
-                type: ResolvedType(resolving: type?.value, expression: initializer)
-            ),
-            label: label.value
-        )
-    } else if let resolvedType = type.flatMap({ ResolvedType(rawValue: $0.value) }) {
-        return Labeled<Variable>.labeled(
-            Variable(
-                name: name,
-                semantics: .immutable,
-                type: resolvedType
-            ),
-            label: label.value
-        )
+        resolvedType = try ResolvedType(resolving: type?.value, expression: initializer)
+    } else if let type = type.flatMap({ ResolvedType(rawValue: $0.value) }) {
+        resolvedType = type
     } else {
         throw ParserError.unresolvedType(nameToken.location)
     }
+
+    let variable = Variable(
+        name: name,
+        semantics: .immutable,
+        type: resolvedType
+    )
+
+    return label.value == "_"
+        ? .unlabeled(variable)
+        : .labeled(variable, label: label.value)
 }
