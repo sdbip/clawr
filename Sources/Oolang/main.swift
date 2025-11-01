@@ -11,7 +11,7 @@ guard FileManager.default.fileExists(atPath: headersDirectoryURL.appending(path:
 
 // azc <path-to-source.az>
 guard CommandLine.arguments.count > 1 else {
-    fputs("Usage: ooc <path-to-source.ool>\n", stderr)
+    fputs("Usage: ooc <path-to-source.ool>\n\n", stderr)
     exit(2)
 }
 
@@ -21,13 +21,28 @@ let exeFile = inputFile.deletingPathExtension().path
 
 let source = try String(contentsOf: inputFile, encoding: .utf8)
 
-let ast = try parse(source)
-// TODO: Optimize AST
-let ir = irgen(ast: ast)
-// TODO: Optimize IR
-let code = codegen(ir: ir)
+do {
+    let ast = try parse(source)
+    // TODO: Optimize AST
+    let ir = irgen(ast: ast)
+    // TODO: Optimize IR
+    let code = codegen(ir: ir)
 
-try code.write(toFile: cFile, atomically: true, encoding: .utf8)
+    try code.write(toFile: cFile, atomically: true, encoding: .utf8)
+
+} catch let error as ParserError {
+    switch error {
+    case .unexpectedEOF:
+        fputs("\(inputFile.lastPathComponent):Unexpected end of file\n", stderr)
+    case .invalidToken(let token):
+        fputs("\(inputFile.lastPathComponent):\(token.location.line):\(token.location.column):Invalid token \(token.value) (\(token.kind.rawValue))\n", stderr)
+    case .unresolvedType(let location):
+        fputs("\(inputFile.lastPathComponent):\(location.line):\(location.column):Unresolved type\n", stderr)
+    case .typeMismatch(declared: let declared, inferred: let inferred, location: let location):
+        fputs("\(inputFile.lastPathComponent):\(location.line):\(location.column):Type mismatch; expected: \(declared.rawValue), was: (\(inferred.rawValue)\n", stderr)
+    }
+    exit(2)
+}
 
 let process = Process()
 process.executableURL = URL(fileURLWithPath: "/usr/bin/clang")
