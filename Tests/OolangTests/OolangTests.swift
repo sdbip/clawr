@@ -49,15 +49,11 @@ private func cInputFiles() -> [TestInputFile] {
 func compile_oolang_code(file: TestInputFile) async throws {
     let fm = FileManager.default
 
-    let exeFile = file.url.deletingPathExtension()
+    let executablePath = [".build/debug/ooc", "ooc"].first { fm.fileExists(atPath: $0) }!
     try #require(fm.fileExists(atPath: file.url.path()))
 
-    let oocURL = Bundle.module.bundleURL
-        .deletingLastPathComponent()
-        .appending(component: "ooc")
-
     let (compilerOutput, isCompilerError) = try runExecutable(
-        atPath: oocURL.path(),
+        atPath: executablePath,
         arguments: [file.url.path()]
     )
 
