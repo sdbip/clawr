@@ -1,8 +1,8 @@
 import Lexer
 
-struct FunctionCall: Equatable {
+struct FunctionCall {
     var target: String
-    var arguments: [Labeled<Expression>]
+    var arguments: [Located<Labeled<UnresolvedExpression>>]
 }
 
 extension FunctionCall: StatementParseable {
@@ -13,10 +13,10 @@ extension FunctionCall: StatementParseable {
     init(parsing stream: TokenStream, in scope: Scope) throws {
         let name = try stream.next().requiring { $0.kind == .identifier }.value
         _ = try stream.next().requiring { $0.value == "("}
-        var arguments: [Labeled<Expression>] = []
+        var arguments: [Located<Labeled<UnresolvedExpression>>] = []
         while stream.peek()?.value != ")" {
-            let expression = try Expression.parse(stream: stream, in: scope)
-            arguments.append(.unlabeled(expression.value))
+            let expression = try UnresolvedExpression.parse(stream: stream)
+            arguments.append((.unlabeled(expression.value), location: expression.location))
             if stream.peek()?.value == "," {
                 _ = stream.next()
             } else {
@@ -28,6 +28,12 @@ extension FunctionCall: StatementParseable {
     }
 
     func resolve(in scope: Scope) throws -> Statement {
-        return .functionCall(target, arguments: arguments)
+        return try .functionCall(target, arguments: arguments.map {
+            let value = try $0.value.value.resolve(in: scope, location: $0.location)
+            switch $0.value {
+            case .labeled(_, label: let label): return .labeled(value, label: label)
+            case .unlabeled(_): return .unlabeled(value)
+            }
+        })
     }
 }

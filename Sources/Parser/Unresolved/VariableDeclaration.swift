@@ -4,7 +4,7 @@ struct VariableDeclaration {
     var name: Located<String>
     var semantics: Located<Semantics>
     var type: Located<String>?
-    var initializer: Located<Expression>?
+    var initializer: Located<UnresolvedExpression>?
 }
 
 extension VariableDeclaration: StatementParseable {
@@ -30,11 +30,11 @@ extension VariableDeclaration: StatementParseable {
         } else {
             type = nil
         }
-        let initializer: Located<Expression>?
+        let initializer: Located<UnresolvedExpression>?
 
         if stream.peek()?.value == "=" {
             _ = try stream.next().requiring { $0.value == "=" }
-            initializer = try Expression.parse(stream: stream, in: scope)
+            initializer = try UnresolvedExpression.parse(stream: stream)
         } else {
             initializer = nil
         }
@@ -50,14 +50,14 @@ extension VariableDeclaration: StatementParseable {
     func resolve(in scope: Scope) throws -> Statement {
         return try .variableDeclaration(
             resolveVariable(in: scope),
-            initializer: initializer?.value
+            initializer: initializer.map { try $0.value.resolve(in: scope, location: $0.location) }
         )
     }
 
     func resolveVariable(in scope: Scope) throws -> Variable {
         let resolvedType: ResolvedType?
         if let initializer {
-            resolvedType = try ResolvedType(resolving: type?.value, expression: initializer)
+            resolvedType = try ResolvedType(resolving: type?.value, expression: (value: initializer.value.resolve(in: scope, location: initializer.location), location: initializer.location))
         } else if let type = type?.value {
             resolvedType = ResolvedType(rawValue: type)
         } else {

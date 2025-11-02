@@ -1,12 +1,20 @@
 import Lexer
 
-extension Expression {
-    static func parse(stream: TokenStream, in scope: Scope) throws -> Located<Expression> {
+enum UnresolvedExpression {
+    case boolean(Bool)
+    case integer(Int64)
+    case real(Double)
+    case bitfield(UInt64)
+    case identifier(String)
+}
+
+extension UnresolvedExpression {
+    static func parse(stream: TokenStream) throws -> Located<UnresolvedExpression> {
         let token = try stream.next().required()
 
         return try (value: expr(), location: token.location)
 
-        func expr() throws -> Expression {
+        func expr() throws -> UnresolvedExpression {
             switch token.value {
             case "true": return .boolean(true)
             case "false": return .boolean(false)
@@ -27,12 +35,24 @@ extension Expression {
                 throw ParserError.invalidToken(token)
 
             case let v where token.kind == .identifier:
-                guard let variable = scope.variable(forName: v) else { throw ParserError.unknownVariable(v,  token.location) }
-                return .identifier(v, type: variable.type)
+                return .identifier(v)
 
             default:
                 throw ParserError.invalidToken(token)
             }
+        }
+    }
+
+    func resolve(in scope: Scope, location: FileLocation) throws -> Expression {
+
+        switch self {
+        case .boolean(let b): return .boolean(b)
+        case .integer(let i): return .integer(i)
+        case .real(let b): return .real(b)
+        case .bitfield(let b): return .bitfield(b)
+        case .identifier(let v):
+            guard let variable = scope.variable(forName: v) else { throw ParserError.unknownVariable(v,  location) }
+            return .identifier(v, type: variable.type)
         }
     }
 }

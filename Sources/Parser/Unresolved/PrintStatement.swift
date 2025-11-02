@@ -1,7 +1,7 @@
 import Lexer
 
 struct PrintStatement {
-    var expression: Expression
+    var expression: Located<UnresolvedExpression>
 }
 
 extension PrintStatement: StatementParseable {
@@ -11,10 +11,10 @@ extension PrintStatement: StatementParseable {
 
     init(parsing stream: TokenStream, in scope: Scope) throws {
         _ = try stream.next().requiring { $0.value == "print" }
-        try self.init(expression: Expression.parse(stream: stream, in: scope).value)
+        try self.init(expression: UnresolvedExpression.parse(stream: stream))
     }
 
     func resolve(in scope: Scope) throws -> Statement {
-        return .printStatement(expression)
+        return try .printStatement(expression.value.resolve(in: scope, location: expression.location))
     }
 }

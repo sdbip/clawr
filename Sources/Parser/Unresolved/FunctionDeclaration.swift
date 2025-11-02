@@ -7,8 +7,8 @@ struct FunctionDeclaration {
     var returnType: String?
 }
 
-public enum FunctionBody {
-    case implicitReturn(Expression)
+enum FunctionBody {
+    case implicitReturn(Located<UnresolvedExpression>)
     case multipleStatements([Statement])
 }
 
@@ -54,7 +54,7 @@ extension FunctionDeclaration: StatementParseable {
 
         if stream.peek()?.value == "=>" {
             _ = stream.next()
-            body = try .implicitReturn(Expression.parse(stream: stream, in:scope).value)
+            body = try .implicitReturn(UnresolvedExpression.parse(stream: stream))
         } else {
             _ = try stream.next().requiring { $0.value == "{" }
             body = try .multipleStatements(parse(stream, in: scope))
@@ -66,19 +66,22 @@ extension FunctionDeclaration: StatementParseable {
 
     func resolve(in scope: Scope) throws -> Statement {
 
+        let parameters = try parameters.map { try resolveParameter($0, in: scope) }
+        let bodyScope = Scope(parent: scope, parameters: parameters.map { $0.value })
+
         switch body {
         case .implicitReturn(let returnExpression):
             return try .functionDeclaration(
                 name,
-                returns: ResolvedType(resolving: returnType, expression: (returnExpression, FileLocation(line: 0, column: 0))),
-                parameters: parameters.map { try resolveParameter($0, in: scope) },
-                body: [.returnStatement(returnExpression)]
+                returns: ResolvedType(resolving: returnType, expression: (value: returnExpression.value.resolve(in: bodyScope, location: returnExpression.location), location: FileLocation(line: 0, column: 0))),
+                parameters: parameters,
+                body: [.returnStatement(returnExpression.value.resolve(in: bodyScope, location: returnExpression.location))]
             )
         case .multipleStatements(let statements):
             return try .functionDeclaration(
                 name,
                 returns: returnType.flatMap { ResolvedType(rawValue: $0) },
-                parameters: parameters.map { try resolveParameter($0, in: scope) },
+                parameters: parameters,
                 body: statements
             )
         }
