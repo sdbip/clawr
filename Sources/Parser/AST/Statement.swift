@@ -9,10 +9,12 @@ public enum Statement: Equatable {
 
 public enum ResolvedType: Equatable {
     case builtin(BuiltinType)
+    case data(DataStructure)
 
     public var name: String {
         switch self {
         case .builtin(let t): t.rawValue
+        case .data(let d): d.name
         }
     }
 }
@@ -38,21 +40,12 @@ public struct Variable: Equatable {
     }
 }
 
-extension ResolvedType {
-    init(resolving string: String?, expression: Located<Expression>) throws {
-        let resolved = string.flatMap { BuiltinType(rawValue:$0) }
-        switch (resolved, expression) {
-        case (.real, (.integer(_), _)):
-            self = .builtin(.real)
+public struct DataStructure: Equatable {
+    public var name: String
+    public var fields: [Variable]
 
-        case (.some(let type), (let e, _)) where e.type == .builtin(type):
-            self = .builtin(type)
-
-        case (.some(let t), (let e, let location)):
-            throw ParserError.typeMismatch(declared: t.rawValue, inferred: e.type.name, location: location)
-
-        case (nil, (let e, _)):
-            self = e.type
-        }
+    public init(name: String, fields: [Variable]) {
+        self.name = name
+        self.fields = fields
     }
 }

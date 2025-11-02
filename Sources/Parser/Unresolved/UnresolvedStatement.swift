@@ -12,6 +12,7 @@ extension UnresolvedStatement {
         switch self {
 
         case .variableDeclaration(let decl):
+            // TODO: register Variable
             return try .variableDeclaration(decl.resolveVariable(in: scope), initializer: decl.initializer?.resolve(in: scope))
 
         case .functionDeclaration(let name, returns: let returnType, parameters: let parameters, body: let body):
@@ -19,14 +20,27 @@ extension UnresolvedStatement {
                 return try $0.map { try $0.resolveVariable(in: scope) }
             }
             let bodyScope = Scope(parent: scope, parameters: parameters.map(\.value))
-            let x = try body.resolve(in: bodyScope, declaredReturnType: returnType?.value)
-            let (resolvedReturnType, body) = x
+            let (resolvedReturnType, bodyStatements) = try resolveBody()
+
             return try .functionDeclaration(
                 name.value,
                 returns: resolvedReturnType,
                 parameters: parameters,
-                body: body
+                body: bodyStatements
             )
+
+            func resolveBody() throws -> (ResolvedType?, [Statement]) {
+                switch body {
+                case .implicitReturn(let expression):
+                    let resolvedExpression = try expression.resolve(in: bodyScope)
+                    let resolvedReturnType = try bodyScope.resolveType(name: returnType.map { ($0.value, location: $0.location) }, initializer: expression)
+                    guard let resolvedReturnType else { throw ParserError.unresolvedType(name.location) }
+                    return (resolvedReturnType, [.returnStatement(resolvedExpression)])
+                case .multipleStatements(let statements):
+                    let resolvedReturnType = returnType.flatMap { BuiltinType(rawValue: $0.value) }.map { ResolvedType.builtin($0) }
+                    return (resolvedReturnType, try statements.map { try $0.resolve(in: bodyScope) })
+                }
+            }
 
         case .functionCall(let name, arguments: let arguments):
             return try .functionCall(name.value, arguments: arguments.map {
@@ -34,9 +48,11 @@ extension UnresolvedStatement {
             })
 
         case .dataStructureDeclaration(let name, fields: let fields):
+            let data = DataStructure(name: name.value, fields: try fields.map { try $0.resolveVariable(in: scope) })
+            scope.register(type: data)
             return .dataStructureDeclaration(
-                name.value,
-                fields: try fields.map { try $0.resolveVariable(in: scope) }
+                data.name,
+                fields: data.fields
             )
 
         case .printStatement(let expression):

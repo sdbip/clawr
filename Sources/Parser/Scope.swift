@@ -2,6 +2,7 @@ public class Scope {
     private let parent: Scope?
 
     private var variables: [String : Variable] = [:]
+    private var types: [String : ResolvedType] = [:]
 
     public init() {
         self.parent = nil
@@ -20,5 +21,21 @@ public class Scope {
 
     public func register(variable: Variable) {
         variables[variable.name] = variable
+    }
+
+    public func type(forName name: String) -> ResolvedType? {
+        return types[name] ?? parent?.type(forName: name)
+    }
+
+    public func register(type: DataStructure) {
+        types[type.name] = .data(type)
+    }
+
+    func resolve(typeNamed name: Located<String>?) -> ResolvedType? {
+        guard let resolved = name.flatMap({ BuiltinType(rawValue: $0.value) }).map({ ResolvedType.builtin($0) })
+            ?? name.flatMap({ self.type(forName: $0.value) })
+        else { return nil}
+
+        return resolved
     }
 }

@@ -29,7 +29,7 @@ extension VariableDeclaration: StatementParseable {
         let type: Located<String>?
         if stream.peek()?.value == ":" {
             _ = try stream.next().requiring { $0.value == ":" }
-            let typeToken = try stream.next().requiring { $0.kind == .builtinType }
+            let typeToken = try stream.next().requiring { $0.kind == .builtinType || $0.kind == .identifier }
             type = (value: typeToken.value, location: typeToken.location)
         } else {
             type = nil
@@ -52,20 +52,29 @@ extension VariableDeclaration: StatementParseable {
     }
 
     func resolveVariable(in scope: Scope) throws -> Variable {
-        let resolvedType: ResolvedType?
-        if let initializer {
-            resolvedType = try ResolvedType(resolving: type?.value, expression: (value: initializer.resolve(in: scope), location: initializer.location))
-        } else if let type = type?.value {
-            resolvedType = BuiltinType(rawValue: type).map { .builtin($0) }
-        } else {
-            resolvedType = nil
-        }
-
-        guard let resolvedType else { throw ParserError.unresolvedType(name.location) }
+        guard let type = try scope.resolveType(name: type, initializer: initializer) else { throw ParserError.unresolvedType(name.location) }
         return Variable(
             name: name.value,
             semantics: semantics.value,
-            type: resolvedType
+            type: type
         )
+    }
+}
+
+extension Scope {
+    func resolveType(name: Located<String>?, initializer: UnresolvedExpression?) throws -> ResolvedType? {
+        let resolvedType = resolve(typeNamed: name)
+        let resolvedInitializer = try initializer?.resolve(in: self)
+
+        switch (resolvedType, resolvedInitializer) {
+        case (.some(let type), .none): return type
+        case (.builtin(.real), .integer(_)): return .builtin(.real)
+        case (nil, .some(let e)): return e.type
+        case (.some(let type), .some(let e)) where e.type == type: return type
+        case (.some(let type), .some(let e)):
+            throw ParserError.typeMismatch(declared: type.name, inferred: e.type.name, location: initializer!.location)
+        case (nil, nil):
+            return nil
+        }
     }
 }

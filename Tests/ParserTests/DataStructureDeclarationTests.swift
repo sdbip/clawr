@@ -28,6 +28,11 @@ struct DataStructureDeclarationTests {
         #expect(ast == [.dataStructureDeclaration("S", fields: [])])
     }
 
+    @Test("Can be used as variable type")
+    func variable_declaration() async throws {
+        _ = try parse("data S {} let x: S")
+    }
+
     @Test
     func single_field() async throws {
         let ast = try parse("data S { x: integer }")

@@ -12,20 +12,6 @@ enum FunctionBody {
     case multipleStatements([UnresolvedStatement])
 }
 
-extension FunctionBody {
-    func resolve(in scope: Scope, declaredReturnType: String?) throws -> (ResolvedType?, [Statement]) {
-        switch self {
-        case .implicitReturn(let expression):
-            let resolvedExpression = try expression.resolve(in: scope)
-            let resolvedReturnType = try ResolvedType(resolving: declaredReturnType, expression: (resolvedExpression, location: expression.location))
-            return (resolvedReturnType, [.returnStatement(resolvedExpression)])
-        case .multipleStatements(let statements):
-            let resolvedReturnType = declaredReturnType.flatMap { BuiltinType(rawValue: $0) }.map { ResolvedType.builtin($0) }
-            return (resolvedReturnType, try statements.map { try $0.resolve(in: scope) })
-        }
-    }
-}
-
 extension FunctionDeclaration: StatementParseable {
     static func isNext(in stream: TokenStream) -> Bool {
         guard let token = stream.peek() else { return false }
