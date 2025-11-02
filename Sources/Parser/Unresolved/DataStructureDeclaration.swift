@@ -10,13 +10,17 @@ extension DataStructureDeclaration: StatementParseable {
         return stream.peek()?.value == "data"
     }
 
-    init(parsing stream: TokenStream, in scope: Scope) throws {
+    var asStatement: UnresolvedStatement {
+        return .dataStructureDeclaration(name, fields: fields)
+    }
+
+    init(parsing stream: TokenStream) throws {
         _ = try stream.next().requiring { $0.value == "data" }
         let nameToken = try stream.next().requiring { $0.kind == .identifier }
         _ = try stream.next().requiring { $0.value == "{" }
         var fields: [VariableDeclaration] = []
         while stream.peek()?.value != "}" {
-            try fields.append(VariableDeclaration(parsing: stream, defaultSemantics: .isolated, in: scope))
+            try fields.append(VariableDeclaration(parsing: stream, defaultSemantics: .isolated))
 
             if stream.peek()?.value == "," {
                 _ = stream.next()
@@ -26,9 +30,5 @@ extension DataStructureDeclaration: StatementParseable {
         }
         _ = try stream.next().requiring { $0.value == "}" }
         self.init(name: (nameToken.value, nameToken.location), fields: fields)
-    }
-
-    func resolve(in scope: Scope) throws -> Statement {
-        return try .dataStructureDeclaration(name.value, fields: fields.map { try $0.resolveVariable(in: scope) })
     }
 }

@@ -13,11 +13,15 @@ extension VariableDeclaration: StatementParseable {
         return Semantics(rawValue: token.value) != nil
     }
 
-    init(parsing stream: TokenStream, in scope: Scope) throws {
-        try self.init(parsing: stream, defaultSemantics: nil, in: scope)
+    var asStatement: UnresolvedStatement {
+        return .variableDeclaration(self)
     }
 
-    init(parsing stream: TokenStream, defaultSemantics: Semantics?, in scope: Scope) throws {
+    init(parsing stream: TokenStream) throws {
+        try self.init(parsing: stream, defaultSemantics: nil)
+    }
+
+    init(parsing stream: TokenStream, defaultSemantics: Semantics?) throws {
         let keywordToken: Token = try stream.next().required()
         guard let semantics = Semantics(rawValue: keywordToken.value) ?? defaultSemantics else { throw ParserError.invalidToken(keywordToken) }
         let nameToken = keywordToken.kind == .identifier ? keywordToken : try stream.next().requiring { $0.kind == .identifier }
@@ -44,13 +48,6 @@ extension VariableDeclaration: StatementParseable {
             semantics: (value: semantics, location: keywordToken.location),
             type: type,
             initializer: initializer
-        )
-    }
-
-    func resolve(in scope: Scope) throws -> Statement {
-        return try .variableDeclaration(
-            resolveVariable(in: scope),
-            initializer: initializer.map { try $0.resolve(in: scope) }
         )
     }
 

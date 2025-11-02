@@ -9,12 +9,12 @@ extension PrintStatement: StatementParseable {
         return stream.peek()?.value == "print"
     }
 
-    init(parsing stream: TokenStream, in scope: Scope) throws {
-        _ = try stream.next().requiring { $0.value == "print" }
-        try self.init(expression: UnresolvedExpression.parse(stream: stream))
+    var asStatement: UnresolvedStatement {
+        return .printStatement(expression)
     }
 
-    func resolve(in scope: Scope) throws -> Statement {
-        return try .printStatement(expression.resolve(in: scope))
+    init(parsing stream: TokenStream) throws {
+        _ = try stream.next().requiring { $0.value == "print" }
+        try self.init(expression: UnresolvedExpression.parse(stream: stream))
     }
 }

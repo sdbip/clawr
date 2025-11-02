@@ -9,7 +9,21 @@ struct FunctionDeclaration {
 
 enum FunctionBody {
     case implicitReturn(UnresolvedExpression)
-    case multipleStatements([Statement])
+    case multipleStatements([UnresolvedStatement])
+}
+
+extension FunctionBody {
+    func resolve(in scope: Scope, declaredReturnType: String?) throws -> (ResolvedType?, [Statement]) {
+        switch self {
+        case .implicitReturn(let expression):
+            let resolvedExpression = try expression.resolve(in: scope)
+            let resolvedReturnType = try ResolvedType(resolving: declaredReturnType, expression: (resolvedExpression, location: expression.location))
+            return (resolvedReturnType, [.returnStatement(resolvedExpression)])
+        case .multipleStatements(let statements):
+            let resolvedReturnType = declaredReturnType.flatMap { ResolvedType(rawValue: $0) } ?? .none
+            return (resolvedReturnType, try statements.map { try $0.resolve(in: scope) })
+        }
+    }
 }
 
 extension FunctionDeclaration: StatementParseable {
@@ -18,7 +32,11 @@ extension FunctionDeclaration: StatementParseable {
         return ["func", "pure"].contains(token.value)
     }
 
-    init(parsing stream: TokenStream, in scope: Scope) throws {
+    var asStatement: UnresolvedStatement {
+        return .functionDeclaration(name, returns: returnType, parameters: parameters, body: body)
+    }
+
+    init(parsing stream: TokenStream) throws {
         _ = try stream.next().requiring { $0.value == "func" }
 
         let nameToken = try stream.next().requiring { $0.kind == .identifier }
@@ -27,7 +45,7 @@ extension FunctionDeclaration: StatementParseable {
         var parameters: [Labeled<VariableDeclaration>] = []
         if stream.peek()?.value != ")" {
             while true {
-                try parameters.append(parseParameter(stream: stream, in: scope))
+                try parameters.append(parseParameter(stream: stream))
                 if stream.peek()?.value == ")" { break }
                 _ = try stream.next().requiring { $0.value == "," }
             }
@@ -45,68 +63,30 @@ extension FunctionDeclaration: StatementParseable {
         let returnType = returnTypeToken.map { ($0.value, $0.location) }
 
         let body: FunctionBody
-        let scope = try Scope(parent: scope, parameters: parameters.map {
-            switch $0 {
-            case .labeled(let variable, label: _),
-                 .unlabeled(let variable):
-                return try variable.resolveVariable(in: scope)
-            }
-        })
-
         if stream.peek()?.value == "=>" {
             _ = stream.next()
             body = try .implicitReturn(UnresolvedExpression.parse(stream: stream))
         } else {
             _ = try stream.next().requiring { $0.value == "{" }
-            body = try .multipleStatements(parse(stream, in: scope))
+            body = try .multipleStatements(parse(stream))
             _ = try stream.next().requiring { $0.value == "}" }
         }
 
         self.init(name: (nameToken.value, nameToken.location), parameters: parameters, body: body, returnType: returnType)
     }
-
-    func resolve(in scope: Scope) throws -> Statement {
-
-        let parameters = try parameters.map { try resolveParameter($0, in: scope) }
-        let bodyScope = Scope(parent: scope, parameters: parameters.map { $0.value })
-
-        switch body {
-        case .implicitReturn(let returnExpression):
-            return try .functionDeclaration(
-                name.value,
-                returns: ResolvedType(resolving: returnType?.value, expression: (value: returnExpression.resolve(in: bodyScope), location: returnExpression.location)),
-                parameters: parameters,
-                body: [.returnStatement(returnExpression.resolve(in: bodyScope))]
-            )
-        case .multipleStatements(let statements):
-            return try .functionDeclaration(
-                name.value,
-                returns: returnType.flatMap { ResolvedType(rawValue: $0.value) },
-                parameters: parameters,
-                body: statements
-            )
-        }
-    }
-
-    func resolveParameter(_ variable: Labeled<VariableDeclaration>, in scope: Scope) throws -> Labeled<Variable> {
-        switch variable {
-        case .labeled(let v, label: let l): try .labeled(v.resolveVariable(in: scope), label: l)
-        case .unlabeled(let v): try .unlabeled(v.resolveVariable(in: scope))
-        }
-    }
 }
 
-func parseParameter(stream: TokenStream, in scope: Scope) throws -> Labeled<VariableDeclaration> {
+func parseParameter(stream: TokenStream) throws -> Labeled<VariableDeclaration> {
     let clone = stream.clone()
     let labelToken = try clone.next().requiring { $0.kind == .identifier }
     if clone.next()?.kind == .identifier {
         _ = stream.next()
-        let variable = try VariableDeclaration(parsing: stream, defaultSemantics: .immutable, in: scope)
+        let variable = try VariableDeclaration(parsing: stream, defaultSemantics: .immutable)
         return labelToken.value == "_"
             ? .unlabeled(variable)
             : .labeled(variable, label: labelToken.value)
     } else {
-        let variable = try VariableDeclaration(parsing: stream, defaultSemantics: .immutable, in: scope)
+        let variable = try VariableDeclaration(parsing: stream, defaultSemantics: .immutable)
         return .labeled(variable, label: variable.name.value)
     }
 }

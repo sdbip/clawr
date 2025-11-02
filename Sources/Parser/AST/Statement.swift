@@ -16,27 +16,6 @@ public enum ResolvedType: String, Sendable {
     case regex
 }
 
-public enum Labeled<Value> {
-    case unlabeled(Value)
-    case labeled(Value, label: String)
-
-    public var label: String? {
-        switch self {
-        case .unlabeled(_): nil
-        case .labeled(_, label: let label): label
-        }
-    }
-
-    public var value: Value {
-        switch self {
-        case .labeled(let value, label: _),
-             .unlabeled(let value): value
-        }
-    }
-}
-
-extension Labeled: Equatable where Value: Equatable {}
-
 public struct Variable: Equatable {
     public var name: String
     public var semantics: Semantics

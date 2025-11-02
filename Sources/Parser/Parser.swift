@@ -3,10 +3,13 @@ import Lexer
 public func parse(_ source: String) throws -> [Statement] {
     let scope = Scope()
     let stream = TokenStream(source: source)
-    return try parse(stream, in: scope)
+    let unresolveds = try parse(stream)
+    return try unresolveds.map {
+        try $0.resolve(in: scope)
+    }
 }
 
-func parse(_ stream: TokenStream, in scope: Scope) throws -> [Statement] {
+func parse(_ stream: TokenStream) throws -> [UnresolvedStatement] {
     let parseables: [StatementParseable.Type] = [
         PrintStatement.self,
         VariableDeclaration.self,
@@ -15,14 +18,14 @@ func parse(_ stream: TokenStream, in scope: Scope) throws -> [Statement] {
         FunctionCall.self,
     ]
 
-    var result: [Statement] = []
+    var result: [UnresolvedStatement] = []
 
     while stream.peek() != nil {
         if stream.peek()?.value == "}" { break }
 
         guard let type = parseables.first(where: { $0.isNext(in: stream) }) else { throw ParserError.invalidToken(try stream.peek().required()) }
-        let unresolved = try type.init(parsing: stream, in: scope)
-        result.append(try unresolved.resolve(in: scope))
+        let unresolved = try type.init(parsing: stream)
+        result.append(unresolved.asStatement)
     }
     return result
 }
