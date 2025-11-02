@@ -7,8 +7,14 @@ public enum Statement: Equatable {
     case returnStatement(Expression)
 }
 
-public enum ResolvedType: Equatable, Sendable {
+public enum ResolvedType: Equatable {
     case builtin(BuiltinType)
+
+    public var name: String {
+        switch self {
+        case .builtin(let t): t.rawValue
+        }
+    }
 }
 
 public enum BuiltinType: String, Sendable {
@@ -43,7 +49,7 @@ extension ResolvedType {
             self = .builtin(type)
 
         case (.some(let t), (let e, let location)):
-            throw ParserError.typeMismatch(declared: .builtin(t), inferred: e.type, location: location)
+            throw ParserError.typeMismatch(declared: t.rawValue, inferred: e.type.name, location: location)
 
         case (nil, (let e, _)):
             self = e.type
