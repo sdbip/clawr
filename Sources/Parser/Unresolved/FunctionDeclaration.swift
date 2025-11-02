@@ -8,7 +8,7 @@ struct FunctionDeclaration {
 }
 
 enum FunctionBody {
-    case implicitReturn(Located<UnresolvedExpression>)
+    case implicitReturn(UnresolvedExpression)
     case multipleStatements([Statement])
 }
 
@@ -73,9 +73,9 @@ extension FunctionDeclaration: StatementParseable {
         case .implicitReturn(let returnExpression):
             return try .functionDeclaration(
                 name,
-                returns: ResolvedType(resolving: returnType, expression: (value: returnExpression.value.resolve(in: bodyScope, location: returnExpression.location), location: FileLocation(line: 0, column: 0))),
+                returns: ResolvedType(resolving: returnType, expression: (value: returnExpression.resolve(in: bodyScope), location: returnExpression.location)),
                 parameters: parameters,
-                body: [.returnStatement(returnExpression.value.resolve(in: bodyScope, location: returnExpression.location))]
+                body: [.returnStatement(returnExpression.resolve(in: bodyScope))]
             )
         case .multipleStatements(let statements):
             return try .functionDeclaration(

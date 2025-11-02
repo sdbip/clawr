@@ -1,41 +1,51 @@
 import Lexer
 
 enum UnresolvedExpression {
-    case boolean(Bool)
-    case integer(Int64)
-    case real(Double)
-    case bitfield(UInt64)
-    case identifier(String)
+    case boolean(Located<Bool>)
+    case integer(Located<Int64>)
+    case real(Located<Double>)
+    case bitfield(Located<UInt64>)
+    case identifier(Located<String>)
 }
 
 extension UnresolvedExpression {
-    static func parse(stream: TokenStream) throws -> Located<UnresolvedExpression> {
+    var location: FileLocation {
+        switch self {
+        case .boolean((_, let l)),
+             .integer((_, let l)),
+             .bitfield((_, let l)),
+             .real((_, let l)),
+             .identifier((_, let l)):
+                return l
+        }
+    }
+    static func parse(stream: TokenStream) throws -> UnresolvedExpression {
         let token = try stream.next().required()
 
-        return try (value: expr(), location: token.location)
+        return try expr()
 
         func expr() throws -> UnresolvedExpression {
             switch token.value {
-            case "true": return .boolean(true)
-            case "false": return .boolean(false)
+            case "true": return .boolean((true, location: token.location))
+            case "false": return .boolean((false, location: token.location))
             case let v where token.kind == .decimal:
                 if let i = Int64(v.replacing("_", with: "")) {
-                    return .integer(i)
+                    return .integer((i, location: token.location))
                 } else if let r = Double(v.replacing("_", with: "")) {
-                    return .real(r)
+                    return .real((r, location: token.location))
                 }
                 throw ParserError.invalidToken(token)
 
             case let v where token.kind == .binary:
                 if v.hasPrefix("0x"), let b = UInt64(v.dropFirst(2).replacing("_", with: ""), radix: 16) {
-                    return .bitfield(b)
+                    return .bitfield((b, location: token.location))
                 } else if v.hasPrefix("0b"), let b = UInt64(v.dropFirst(2).replacing("_", with: ""), radix: 2) {
-                    return .bitfield(b)
+                    return .bitfield((b, location: token.location))
                 }
                 throw ParserError.invalidToken(token)
 
             case let v where token.kind == .identifier:
-                return .identifier(v)
+                return .identifier((v, location: token.location))
 
             default:
                 throw ParserError.invalidToken(token)
@@ -43,14 +53,14 @@ extension UnresolvedExpression {
         }
     }
 
-    func resolve(in scope: Scope, location: FileLocation) throws -> Expression {
+    func resolve(in scope: Scope) throws -> Expression {
 
         switch self {
-        case .boolean(let b): return .boolean(b)
-        case .integer(let i): return .integer(i)
-        case .real(let b): return .real(b)
-        case .bitfield(let b): return .bitfield(b)
-        case .identifier(let v):
+        case .boolean((let b, _)): return .boolean(b)
+        case .integer((let i, _)): return .integer(i)
+        case .real((let b, _)): return .real(b)
+        case .bitfield((let b, _)): return .bitfield(b)
+        case .identifier((let v, let location)):
             guard let variable = scope.variable(forName: v) else { throw ParserError.unknownVariable(v,  location) }
             return .identifier(v, type: variable.type)
         }

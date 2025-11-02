@@ -1,7 +1,7 @@
 import Lexer
 
 struct PrintStatement {
-    var expression: Located<UnresolvedExpression>
+    var expression: UnresolvedExpression
 }
 
 extension PrintStatement: StatementParseable {
@@ -15,6 +15,6 @@ extension PrintStatement: StatementParseable {
     }
 
     func resolve(in scope: Scope) throws -> Statement {
-        return try .printStatement(expression.value.resolve(in: scope, location: expression.location))
+        return try .printStatement(expression.resolve(in: scope))
     }
 }
