@@ -33,7 +33,7 @@ extension DataStructureDeclaration: StatementParseable {
         self.init(name: name, fields: fields)
     }
 
-    func resolve() throws -> Statement {
-        return try .dataStructureDeclaration(name, fields: fields.map { try $0.resolveVariable() })
+    func resolve(in scope: Scope) throws -> Statement {
+        return try .dataStructureDeclaration(name, fields: fields.map { try $0.resolveVariable(in: scope) })
     }
 }

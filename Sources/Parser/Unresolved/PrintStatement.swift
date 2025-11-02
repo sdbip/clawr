@@ -14,7 +14,7 @@ extension PrintStatement: StatementParseable {
         try self.init(expression: Expression.parse(stream: stream, in: scope).value)
     }
 
-    func resolve() throws -> Statement {
+    func resolve(in scope: Scope) throws -> Statement {
         return .printStatement(expression)
     }
 }

@@ -48,7 +48,7 @@ extension FunctionDeclaration: StatementParseable {
             switch $0 {
             case .labeled(let variable, label: _),
                  .unlabeled(let variable):
-                return try variable.resolveVariable()
+                return try variable.resolveVariable(in: scope)
             }
         })
 
@@ -64,30 +64,30 @@ extension FunctionDeclaration: StatementParseable {
         self.init(name: name, parameters: parameters, body: body, returnType: returnType)
     }
 
-    func resolve() throws -> Statement {
+    func resolve(in scope: Scope) throws -> Statement {
 
         switch body {
         case .implicitReturn(let returnExpression):
             return try .functionDeclaration(
                 name,
                 returns: ResolvedType(resolving: returnType, expression: (returnExpression, FileLocation(line: 0, column: 0))),
-                parameters: parameters.map(resolveParameter(_:)),
+                parameters: parameters.map { try resolveParameter($0, in: scope) },
                 body: [.returnStatement(returnExpression)]
             )
         case .multipleStatements(let statements):
             return try .functionDeclaration(
                 name,
                 returns: returnType.flatMap { ResolvedType(rawValue: $0) },
-                parameters: parameters.map(resolveParameter(_:)),
+                parameters: parameters.map { try resolveParameter($0, in: scope) },
                 body: statements
             )
         }
     }
 
-    func resolveParameter(_ variable: Labeled<VariableDeclaration>) throws -> Labeled<Variable> {
+    func resolveParameter(_ variable: Labeled<VariableDeclaration>, in scope: Scope) throws -> Labeled<Variable> {
         switch variable {
-        case .labeled(let v, label: let l): try .labeled(v.resolveVariable(), label: l)
-        case .unlabeled(let v): try .unlabeled(v.resolveVariable())
+        case .labeled(let v, label: let l): try .labeled(v.resolveVariable(in: scope), label: l)
+        case .unlabeled(let v): try .unlabeled(v.resolveVariable(in: scope))
         }
     }
 }

@@ -22,7 +22,7 @@ func parse(_ stream: TokenStream, in scope: Scope) throws -> [Statement] {
 
         guard let type = parseables.first(where: { $0.isNext(in: stream) }) else { throw ParserError.invalidToken(try stream.peek().required()) }
         let unresolved = try type.init(parsing: stream, in: scope)
-        result.append(try unresolved.resolve())
+        result.append(try unresolved.resolve(in: scope))
     }
     return result
 }

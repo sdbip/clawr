@@ -47,14 +47,14 @@ extension VariableDeclaration: StatementParseable {
         )
     }
 
-    func resolve() throws -> Statement {
+    func resolve(in scope: Scope) throws -> Statement {
         return try .variableDeclaration(
-            resolveVariable(),
+            resolveVariable(in: scope),
             initializer: initializer?.value
         )
     }
 
-    func resolveVariable() throws -> Variable {
+    func resolveVariable(in scope: Scope) throws -> Variable {
         let resolvedType: ResolvedType?
         if let initializer {
             resolvedType = try ResolvedType(resolving: type?.value, expression: initializer)

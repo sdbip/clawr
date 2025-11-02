@@ -32,7 +32,7 @@ extension FunctionCall: StatementParseable {
         self.init(target: name, arguments: arguments)
     }
 
-    func resolve() throws -> Statement {
+    func resolve(in scope: Scope) throws -> Statement {
         return .functionCall(target, arguments: arguments)
     }
 }
