@@ -31,9 +31,35 @@ public func irgen(statements: [Parser.Statement]) -> [Codegen.Statement] {
     for statement in statements {
         switch statement {
         case .variableDeclaration(let variable, initializer: let initializer):
-            result.append(.variable(variable.name, type: variable.type.name, initializer: initializer.map(irgen(expression:)) ?? .literal("NULL")))
-        case .dataStructureDeclaration(_, fields: _):
-            fatalError("dataStructureDclaration not yet implemented!!")
+            let type: String
+            switch variable.type {
+            case .builtin(let t): type = t.rawValue
+            case .data(let t): type = "\(t.name)*"
+            }
+            result.append(.variable(variable.name, type: type, initializer: initializer.map(irgen(expression:)) ?? .literal("NULL")))
+        case .dataStructureDeclaration(let name, fields: let fields):
+            result.append(.structDeclaration("__\(name)_data", fields: fields.map { Field(type: .simple($0.type.name), name: $0.name)}))
+            result.append(.structDeclaration(
+                name,
+                fields: [
+                    Field(type: .simple("struct __oo_rc_header"), name: "header"),
+                    Field(type: .simple("struct __\(name)_data"), name: name),
+                ]
+            ))
+            result.append(.variable(
+                "__\(name)_data_type",
+                type: "__oo_data_type",
+                initializer: .structInitializer([
+                    NamedValue(name: "size", value: .call(.name("sizeof"), arguments: [.reference(.name(name))]))
+                ])
+            ))
+            result.append(.variable(
+                "__\(name)_info",
+                type: "__oo_type_info",
+                initializer: .structInitializer([
+                    NamedValue(name: "data", value: .reference(.address(of: .name("__\(name)_data_type"))))
+                ])
+            ))
         case .functionDeclaration(let name, returns: let returnType, parameters: let parameters, body: let body):
             result.append(.function(name, returns: returnType?.name ?? "void", parameters: [], body: irgen(statements: body)))
         case .functionCall(let name, arguments: let arguments):
@@ -56,7 +82,7 @@ func irgen(expression: Parser.Expression) -> Codegen.Expression {
     case .bitfield(let b): .literal("\(b)")
     case .identifier(let identifier, type: _): .reference(.name(identifier))
     case .dataStructureLiteral(let type, fieldValues: let values):
-        fatalError("Data structure ir-gen not yet implemented")
+        .call(.name("oo_alloc"), arguments: [.reference(.name("__oo_ISOLATED")), .reference(.name("__\(type.name)_info"))])
     }
 }
 

@@ -1,0 +1,2 @@
+data S { value: integer }
+let x: S = {value: 2}
