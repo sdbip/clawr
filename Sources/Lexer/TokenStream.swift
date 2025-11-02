@@ -7,12 +7,17 @@ public class TokenStream {
         self.location = Location(source: source)
     }
 
+    public func clone() -> TokenStream {
+        let clone = TokenStream(source: source)
+        clone.location = location
+        return clone
+    }
+
     public func peek(skippingNewlines: Bool = true) -> Token? {
         if location.isAtEnd { return nil }
 
-        let peeker = TokenStream(source: source)
-        peeker.location = location
-        return peeker.next(skippingNewlines: skippingNewlines)
+        let clone = clone()
+        return clone.next(skippingNewlines: skippingNewlines)
     }
 
     public func next(skippingNewlines: Bool = true) -> Token? {
@@ -20,8 +25,6 @@ public class TokenStream {
         if skippingNewlines {
             while !location.isAtEnd && (location.currentCharacter.isNewline || location.currentCharacter.isWhitespace) { location.advance() }
         }
-
-        if location.isAtEnd { return nil }
 
         skipComments(andNewlines: skippingNewlines)
 
@@ -130,6 +133,7 @@ public class TokenStream {
     }
 
     private func skipComments(andNewlines skippingNewlines: Bool) {
+        guard !location.isAtEnd else { return }
         guard location.currentCharacter == "/" else { return }
 
         let next = location.advanced(by: 1)
