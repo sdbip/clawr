@@ -31,12 +31,7 @@ public func irgen(statements: [Parser.Statement]) -> [Codegen.Statement] {
     for statement in statements {
         switch statement {
         case .variableDeclaration(let variable, initializer: let initializer):
-            let type: String
-            switch variable.type {
-            case .builtin(let t): type = t.rawValue
-            case .data(let t): type = "\(t.name)*"
-            }
-            result.append(.variable(variable.name, type: type, initializer: initializer.map(irgen(expression:)) ?? .literal("NULL")))
+            result.append(.variable(variable.name, type: variable.type.irName, initializer: initializer.map(irgen(expression:)) ?? .literal("NULL")))
             if let initializer {
                 let assignments = irgen(assigned: initializer, to: .name(variable.name))
                 result.append(contentsOf: assignments)
