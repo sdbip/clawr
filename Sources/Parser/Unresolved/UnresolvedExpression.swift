@@ -11,22 +11,21 @@ enum UnresolvedExpression: Equatable {
 }
 
 indirect enum UnresolvedLookupTarget: Equatable {
-    case expression(UnresolvedExpression, location: FileLocation)
+    case expression(UnresolvedExpression)
     case member(UnresolvedLookupTarget, member: String, location: FileLocation)
 }
 
 extension UnresolvedExpression {
     var location: FileLocation {
         switch self {
-        case .boolean(_, let l),
-             .integer(_, let l),
-             .bitfield(_, let l),
-             .real(_, let l),
-             .dataStructureLiteral(_, let l),
-             .memberLookup(.expression(_, location: let l)),
-             .memberLookup(.member(_, member: _, location: let l)),
-             .identifier(_, let l):
-                return l
+        case .memberLookup(.expression(let e)): return e.location
+        case .boolean(_, let l): return l
+        case .integer(_, let l): return l
+        case .bitfield(_, let l): return l
+        case .real(_, let l): return l
+        case .dataStructureLiteral(_, let l): return l
+        case .memberLookup(.member(_, member: _, location: let l)): return l
+        case .identifier(_, let l): return l
         }
     }
     static func parse(stream: TokenStream) throws -> UnresolvedExpression {
@@ -40,7 +39,7 @@ extension UnresolvedExpression {
                 _ = stream.next()
                 let memberToken = try stream.next().requiring { $0.kind == .identifier }
                 return try lookup(current: .memberLookup(.member(
-                    .expression(current, location: memberToken.location),
+                    .expression(current),
                     member: memberToken.value,
                     location: memberToken.location
                 )))
@@ -113,7 +112,7 @@ extension UnresolvedExpression {
 
     private func resolve(lookup: UnresolvedLookupTarget, in scope: Scope) throws -> LookupTarget {
         switch lookup {
-        case .expression(let expression, location: let location):
+        case .expression(let expression):
             return .expression(try expression.resolve(in: scope, declaredType: nil))
         case .member(let target, member: let member, location: let location):
             let parent = try resolve(lookup: target, in: scope)
