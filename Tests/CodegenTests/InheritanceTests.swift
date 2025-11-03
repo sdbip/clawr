@@ -45,11 +45,11 @@ struct InheritanceTests {
                 ],
                 body: [.assign(
                     .field(
-                        target: .field(
-                            target: .name("self"),
+                        target: .reference(.field(
+                            target: .reference(.name("self")),
                             name: "SuperData",
                             isPointer: true
-                        ),
+                        )),
                         name: "value",
                         isPointer: false
                     ),
@@ -65,11 +65,11 @@ struct InheritanceTests {
                 ],
                 body: [.assign(
                     .field(
-                        target: .field(
-                            target: .name("self"),
+                        target: .reference(.field(
+                            target: .reference(.name("self")),
                             name: "SuperData",
                             isPointer: true
-                        ),
+                        )),
                         name: "value",
                         isPointer: false
                     ),
@@ -84,11 +84,11 @@ struct InheritanceTests {
                 ],
                 body: [.return(
                     .reference(.field(
-                        target: .field(
-                            target: .name("self"),
+                        target: .reference(.field(
+                            target: .reference(.name("self")),
                             name: "SuperData",
                             isPointer: true
-                        ),
+                        )),
                         name: "value",
                         isPointer: false
                     ))
@@ -141,11 +141,11 @@ struct InheritanceTests {
                 body: [
                     .assign(
                         .field(
-                            target: .field(
-                                target: .name("self"),
+                            target: .reference(.field(
+                                target: .reference(.name("self")),
                                 name: "ObjectData",
                                 isPointer: true
-                            ),
+                            )),
                             name: "value",
                             isPointer: false
                         ),
@@ -169,11 +169,11 @@ struct InheritanceTests {
                 ],
                 body: [.assign(
                     .field(
-                        target: .field(
-                            target: .name("self"),
+                        target: .reference(.field(
+                            target: .reference(.name("self")),
                             name: "ObjectData",
                             isPointer: true
-                        ),
+                        )),
                         name: "value",
                         isPointer: false
                     ),
@@ -188,11 +188,11 @@ struct InheritanceTests {
                 ],
                 body: [.return(
                     .reference(.field(
-                        target: .field(
-                            target: .name("self"),
+                        target: .reference(.field(
+                            target: .reference(.name("self")),
                             name: "ObjectData",
                             isPointer: true
-                        ),
+                        )),
                         name: "value",
                         isPointer: false
                     ))
@@ -263,23 +263,23 @@ struct InheritanceTests {
                     .call(
                         .field(
                             target: .cast(
-                                .field(
-                                    target: .field(
-                                        target: .field(
-                                            target: .field(
-                                                target: .name("x"),
+                                .reference(.field(
+                                    target: .reference(.field(
+                                        target: .reference(.field(
+                                            target: .reference(.field(
+                                                target: .reference(.name("x")),
                                                 name: "header",
                                                 isPointer: true
-                                            ),
+                                            )),
                                             name: "is_a",
                                             isPointer: false
-                                        ),
+                                        )),
                                         name: "object",
                                         isPointer: false
-                                    ),
+                                    )),
                                     name: "vtable",
                                     isPointer: true
-                                ),
+                                )),
                                 type: "__Super_vtable*"
                             ),
                             name: "setValue",
@@ -340,23 +340,23 @@ struct InheritanceTests {
                                 .call(
                                     .field(
                                         target: .cast(
-                                            .field(
-                                                target: .field(
-                                                    target: .field(
-                                                        target: .field(
-                                                            target: .name("y"),
+                                            .reference(.field(
+                                                target: .reference(.field(
+                                                    target: .reference(.field(
+                                                        target: .reference(.field(
+                                                            target: .reference(.name("y")),
                                                             name: "header",
                                                             isPointer: true
-                                                        ),
+                                                        )),
                                                         name: "is_a",
                                                         isPointer: false
-                                                    ),
+                                                    )),
                                                     name: "object",
                                                     isPointer: false
-                                                ),
+                                                )),
                                                 name: "vtable",
                                                 isPointer: true
-                                            ),
+                                            )),
                                             type: "__Super_vtable*"
                                         ),
                                         name: "value",
@@ -413,23 +413,23 @@ struct InheritanceTests {
                                  .call(
                                     .field(
                                         target: .cast(
-                                            .field(
-                                                target: .field(
-                                                    target: .field(
-                                                        target: .field(
-                                                            target: .name("x"),
+                                            .reference(.field(
+                                                target: .reference(.field(
+                                                    target: .reference(.field(
+                                                        target: .reference(.field(
+                                                            target: .reference(.name("x")),
                                                             name: "header",
                                                             isPointer: true
-                                                        ),
+                                                        )),
                                                         name: "is_a",
                                                         isPointer: false
-                                                    ),
+                                                    )),
                                                     name: "object",
                                                     isPointer: false
-                                                ),
+                                                )),
                                                 name: "vtable",
                                                 isPointer: true
-                                            ),
+                                            )),
                                             type: "__Super_vtable*"
                                         ),
                                         name: "value",

@@ -1,2 +1,8 @@
-data S { value: integer }
-let x: S = {value: 2}
+data Innie { value: integer }
+data Outie { value: integer, innie: Innie }
+let x: Outie = {
+    value: 2,
+    innie: {
+        value: 1
+    }
+}

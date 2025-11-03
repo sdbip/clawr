@@ -37,10 +37,11 @@ struct TraitsTests {
                                 arguments: [
                                     .reference(
                                         .field(
-                                            target: .field(
-                                                target: .cast(.name("self"), type: "Struct*"),
+                                            target: .reference(.field(
+                                                target: .cast(.reference(.name("self")), type: "Struct*"),
                                                 name: "StructData",
-                                                isPointer: true),
+                                                isPointer: true
+                                            )),
                                             name: "value",
                                             isPointer: false),
                                     ),
@@ -64,7 +65,7 @@ struct TraitsTests {
                             type: "string*",
                             initializer: .call(
                                 .field(
-                                    target: .name("vtable"),
+                                    target: .reference(.name("vtable")),
                                     name: "toString",
                                     isPointer: true
                                 ),
@@ -132,10 +133,11 @@ struct TraitsTests {
                     ),
                     .assign(
                         .field(
-                            target: .field(
-                                target: .name("x"),
+                            target: .reference(.field(
+                                target: .reference(.name("x")),
                                 name: "StructData",
-                                isPointer: true),
+                                isPointer: true
+                            )),
                             name: "value",
                             isPointer: false
                         ),

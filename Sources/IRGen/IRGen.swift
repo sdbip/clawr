@@ -37,8 +37,17 @@ public func irgen(statements: [Parser.Statement]) -> [Codegen.Statement] {
             case .data(let t): type = "\(t.name)*"
             }
             result.append(.variable(variable.name, type: type, initializer: initializer.map(irgen(expression:)) ?? .literal("NULL")))
+            if let initializer {
+                let assignments = irgen(assigned: initializer, to: .name(variable.name))
+                result.append(contentsOf: assignments)
+            }
         case .dataStructureDeclaration(let name, fields: let fields):
-            result.append(.structDeclaration("__\(name)_data", fields: fields.map { Field(type: .simple($0.type.name), name: $0.name)}))
+            result.append(.structDeclaration(
+                "__\(name)_data",
+                fields: fields.map {
+                    Field(type: irgen(type: $0.type), name: $0.name)
+                }
+            ))
             result.append(.structDeclaration(
                 name,
                 fields: [
@@ -74,6 +83,30 @@ public func irgen(statements: [Parser.Statement]) -> [Codegen.Statement] {
     return result
 }
 
+func irgen(assigned expression: Parser.Expression, to target: Reference) -> [Codegen.Statement] {
+    var result: [Codegen.Statement] = []
+    result.append(.assign(target, value: irgen(expression: expression)))
+
+    if case .dataStructureLiteral(.data(let type), fieldValues: let values) = expression {
+        for (fieldName, value) in values {
+            let assignments = irgen(
+                assigned: value,
+                to: .field(
+                    target: .reference(.field(
+                        target: .reference(target),
+                        name: type.name,
+                        isPointer: true
+                    )),
+                    name: fieldName,
+                    isPointer: false
+                )
+            )
+            result.append(contentsOf: assignments)
+        }
+    }
+    return result
+}
+
 func irgen(expression: Parser.Expression) -> Codegen.Expression {
     switch expression {
     case .boolean(let b): .literal(b ? "1" : "0")
@@ -81,8 +114,15 @@ func irgen(expression: Parser.Expression) -> Codegen.Expression {
     case .real(let r): .literal("\(1/r)")
     case .bitfield(let b): .literal("\(b)")
     case .identifier(let identifier, type: _): .reference(.name(identifier))
-    case .dataStructureLiteral(let type, fieldValues: let values):
+    case .dataStructureLiteral(let type, fieldValues: _):
         .call(.name("oo_alloc"), arguments: [.reference(.name("__oo_ISOLATED")), .reference(.name("__\(type.name)_info"))])
+    }
+}
+
+func irgen(type: ResolvedType) -> Type {
+    switch type {
+    case .builtin(let type): .simple(type.rawValue)
+    case .data(let data): .simple("\(data.name)*")
     }
 }
 

@@ -20,7 +20,7 @@ public indirect enum Reference {
     case cast(Reference, type: String)
     case address(of: Reference)
     case name(String)
-    case field(target: Reference, name: String, isPointer: Bool)
+    case field(target: Expression, name: String, isPointer: Bool)
 }
 
 public struct NamedValue {
