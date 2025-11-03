@@ -9,7 +9,8 @@ struct FunctionCallTests {
         arguments: ["f (", "f( 1 , 2"]
     )
     func unexpected_end(_ source: String) async throws {
-        let error = try #require(throws: ParserError.self) { try parse(source) }
+        let stream = TokenStream(source: source)
+        let error = try #require(throws: ParserError.self) { try FunctionCall(parsing: stream) }
         guard case .unexpectedEOF = error else {
             Issue.record("Did not throw the expected error, was: \(error)")
             return
@@ -30,6 +31,7 @@ struct FunctionCallTests {
         ]
     )
     func valid_function_calls(_ source: String) async throws {
-        _ = try parse(source)
+        let stream = TokenStream(source: source)
+        _ = try FunctionCall.init(parsing: stream)
     }
 }
