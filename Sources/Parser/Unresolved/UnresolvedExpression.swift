@@ -33,29 +33,21 @@ extension UnresolvedExpression {
         let token = try stream.peek().required()
 
         let expression = try expr()
-        if stream.peek()?.value == "." {
-            _ = stream.next()
-            let memberToken = try stream.next().requiring { $0.kind == .identifier }
+        return try lookup(current: expression)
 
-            let expression2: UnresolvedExpression = .memberLookup(.member(
-                .expression(expression, location: token.location),
-                member: memberToken.value,
-                location: memberToken.location
-            ))
+        func lookup(current: UnresolvedExpression) throws -> UnresolvedExpression {
             if stream.peek()?.value == "." {
                 _ = stream.next()
-                let memberToken2 = try stream.next().requiring { $0.kind == .identifier }
-                return .memberLookup(.member(
-                    .expression(expression2, location: memberToken.location),
-                    member: memberToken2.value,
-                    location: memberToken2.location
-                ))
+                let memberToken = try stream.next().requiring { $0.kind == .identifier }
+                return try lookup(current: .memberLookup(.member(
+                    .expression(current, location: memberToken.location),
+                    member: memberToken.value,
+                    location: memberToken.location
+                )))
             }
 
-            return expression2
+            return current
         }
-
-        return expression
 
         func expr() throws -> UnresolvedExpression {
             switch token.value {
