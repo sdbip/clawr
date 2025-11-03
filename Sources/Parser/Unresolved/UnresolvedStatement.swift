@@ -1,6 +1,6 @@
 enum UnresolvedStatement {
     case variableDeclaration(VariableDeclaration)
-    case functionDeclaration(Located<String>, returns: Located<String>?, parameters: [Labeled<VariableDeclaration>], body: FunctionBody)
+    case functionDeclaration(FunctionDeclaration)
     case functionCall(Located<String>, arguments: [Labeled<UnresolvedExpression>])
     case dataStructureDeclaration(Located<String>, fields: [VariableDeclaration])
     case printStatement(UnresolvedExpression)
@@ -16,32 +16,10 @@ extension UnresolvedStatement {
             scope.register(variable: variable)
             return try .variableDeclaration(variable, initializer: decl.initializer?.resolve(in: scope, declaredType: decl.type?.value))
 
-        case .functionDeclaration(let name, returns: let returnType, parameters: let parameters, body: let body):
-            let parameters = try parameters.map {
-                return try $0.map { try $0.resolveVariable(in: scope) }
-            }
-            let bodyScope = Scope(parent: scope, parameters: parameters.map(\.value))
-            let (resolvedReturnType, bodyStatements) = try resolveBody()
-
-            return try .functionDeclaration(Function(
-                name: name.value,
-                returnType: resolvedReturnType,
-                parameters: parameters,
-                body: bodyStatements
-            ))
-
-            func resolveBody() throws -> (ResolvedType?, [Statement]) {
-                switch body {
-                case .implicitReturn(let expression):
-                    let resolvedExpression = try expression.resolve(in: bodyScope, declaredType: returnType?.value)
-                    let resolvedReturnType = try bodyScope.resolveType(name: returnType.map { ($0.value, location: $0.location) }, initializer: expression)
-                    guard let resolvedReturnType else { throw ParserError.unresolvedType(name.location) }
-                    return (resolvedReturnType, [.returnStatement(resolvedExpression)])
-                case .multipleStatements(let statements):
-                    let resolvedReturnType = returnType.flatMap { BuiltinType(rawValue: $0.value) }.map { ResolvedType.builtin($0) }
-                    return (resolvedReturnType, try statements.map { try $0.resolve(in: bodyScope) })
-                }
-            }
+        case .functionDeclaration(let decl):
+            let function = try decl.resolveFunction(in: scope)
+            // TODO: Regster in scope
+            return .functionDeclaration(function)
 
         case .functionCall(let name, arguments: let arguments):
             return try .functionCall(name.value, arguments: arguments.map {

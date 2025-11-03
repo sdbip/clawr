@@ -19,7 +19,7 @@ extension FunctionDeclaration: StatementParseable {
     }
 
     var asStatement: UnresolvedStatement {
-        return .functionDeclaration(name, returns: returnType, parameters: parameters, body: body)
+        return .functionDeclaration(self)
     }
 
     init(parsing stream: TokenStream) throws {
@@ -59,6 +59,34 @@ extension FunctionDeclaration: StatementParseable {
         }
 
         self.init(name: (nameToken.value, nameToken.location), parameters: parameters, body: body, returnType: returnType)
+    }
+
+    func resolveFunction(in scope: Scope) throws -> Function {
+        let parameters = try parameters.map {
+            return try $0.map { try $0.resolveVariable(in: scope) }
+        }
+        let bodyScope = Scope(parent: scope, parameters: parameters.map(\.value))
+        let (resolvedReturnType, bodyStatements) = try resolveBody()
+
+        return Function(
+            name: name.value,
+            returnType: resolvedReturnType,
+            parameters: parameters,
+            body: bodyStatements
+        )
+
+        func resolveBody() throws -> (ResolvedType?, [Statement]) {
+            switch body {
+            case .implicitReturn(let expression):
+                let resolvedExpression = try expression.resolve(in: bodyScope, declaredType: returnType?.value)
+                let resolvedReturnType = try bodyScope.resolveType(name: returnType.map { ($0.value, location: $0.location) }, initializer: expression)
+                guard let resolvedReturnType else { throw ParserError.unresolvedType(name.location) }
+                return (resolvedReturnType, [.returnStatement(resolvedExpression)])
+            case .multipleStatements(let statements):
+                let resolvedReturnType = returnType.flatMap { BuiltinType(rawValue: $0.value) }.map { ResolvedType.builtin($0) }
+                return (resolvedReturnType, try statements.map { try $0.resolve(in: bodyScope) })
+            }
+        }
     }
 }
 
