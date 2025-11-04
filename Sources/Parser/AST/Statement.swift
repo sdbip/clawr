@@ -11,11 +11,13 @@ public enum Statement: Equatable {
 public enum ResolvedType: Equatable {
     case builtin(BuiltinType)
     case data(DataStructure)
+    case object(Object)
 
     public var name: String {
         switch self {
         case .builtin(let t): t.rawValue
         case .data(let d): d.name
+        case .object(let o): o.name
         }
     }
 }
@@ -75,6 +77,8 @@ public struct DataStructure: Equatable {
 
 public struct Object: Equatable {
     public var name: String
+    public var isAbstract: Bool
+    public var supertype: Indirect<ResolvedType>?
     public var pureMethods: [Function]
     public var mutatingMethods: [Function]
     public var fields: [Variable]
@@ -83,6 +87,8 @@ public struct Object: Equatable {
 
     public init(
             name: String,
+            isAbstract: Bool = false,
+            supertype: ResolvedType? = nil,
             pureMethods: [Function] = [],
             mutatingMethods: [Function] = [],
             fields: [Variable] = [],
@@ -90,6 +96,8 @@ public struct Object: Equatable {
             staticFields: [Variable] = [],
             ) {
         self.name = name
+        self.isAbstract = isAbstract
+        self.supertype = supertype.map { .value($0) }
         self.pureMethods = pureMethods
         self.mutatingMethods = mutatingMethods
         self.fields = fields

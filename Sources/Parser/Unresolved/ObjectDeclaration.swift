@@ -2,6 +2,8 @@ import Lexer
 
 struct ObjectDeclaration {
     var name: Located<String>
+    var isAbstract: Bool
+    var supertype: Located<String>?
     var pureMethods: [FunctionDeclaration] = []
     var mutatingMethods: [FunctionDeclaration] = []
     var fields: [VariableDeclaration] = []
@@ -20,8 +22,27 @@ extension ObjectDeclaration: StatementParseable {
 
     init(parsing stream: TokenStream) throws {
         _ = try stream.next().requiring { $0.value == "object" }
+
+        let isAbstract: Bool
+        if stream.peek()?.value == "abstract" {
+            _ = stream.next()
+            isAbstract = true
+        } else {
+            isAbstract = false
+        }
+
         let nameToken = try stream.next().requiring { $0.kind == .identifier }
-        self.init(name: (nameToken.value, location: nameToken.location))
+        self.init(
+            name: (nameToken.value, location: nameToken.location),
+            isAbstract: isAbstract,
+            supertype: nil,
+        )
+
+        if stream.peek()?.value == ":" {
+            _ = stream.next()
+            let supertypeToken = try stream.next().requiring { $0.kind == .identifier }
+            supertype = (supertypeToken.value, supertypeToken.location)
+        }
 
         _ = try stream.next().requiring { $0.value == "{" }
 
@@ -75,6 +96,8 @@ extension ObjectDeclaration: StatementParseable {
     func resolveObject(in scope: Scope) throws -> Object {
         return Object(
             name: name.value,
+            isAbstract: isAbstract,
+            supertype: scope.resolve(typeNamed: supertype),
             pureMethods: try pureMethods.map { try $0.resolveFunction(in: scope) },
             mutatingMethods: try mutatingMethods.map { try $0.resolveFunction(in: scope) },
             fields: try fields.map { try $0.resolveVariable(in: scope) },

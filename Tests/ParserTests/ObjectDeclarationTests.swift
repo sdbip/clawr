@@ -167,4 +167,29 @@ struct ObjectDeclarationTests {
             staticFields: [Variable(name: "answer", semantics: .immutable, type: .builtin(.integer))],
         ))])
     }
+
+    @Test
+    func supertype() async throws {
+        let source = """
+            object Super {}
+            object S: Super {}
+            """
+        let ast = try parse(source)
+        #expect(ast.last == .objectDeclaration(Object(
+            name: "S",
+            isAbstract: false,
+            supertype: .object(Object(name: "Super")),
+        )))
+    }
+
+    @Test
+    func abstract_object() async throws {
+        let source = "object abstract S {}"
+        let ast = try parse(source)
+        #expect(ast == [.objectDeclaration(Object(
+            name: "S",
+            isAbstract: true,
+            supertype: nil,
+        ))])
+    }
 }

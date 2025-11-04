@@ -37,6 +37,7 @@ extension UnresolvedStatement {
 
         case .objectDeclaration(let decl):
             let object = try decl.resolveObject(in: scope)
+            scope.register(type: object)
             return .objectDeclaration(object)
 
         case .printStatement(let expression):

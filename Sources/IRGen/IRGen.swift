@@ -153,6 +153,7 @@ extension ResolvedType {
         switch self {
         case .builtin(_): false
         case .data(_): true
+        case .object(_): true
         }
     }
 
