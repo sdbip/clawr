@@ -34,4 +34,24 @@ struct FunctionCallTests {
         let stream = TokenStream(source: source)
         _ = try FunctionCall.init(parsing: stream)
     }
+
+    @Test("Resolves")
+    func resolves() async throws {
+        let source = """
+            func f() {}
+            f()
+            """
+        let ast = try parse(source)
+        #expect(ast == [
+            .functionDeclaration(Function(name: "f", returnType: nil, parameters: [], body: [])),
+            .functionCall("f", arguments: []),
+        ])
+    }
+
+    @Test("Fails to resolve unknown function")
+    func fails_to_resolve() async throws {
+        let source = "f()"
+        let error = try #require(throws: ParserError.self) { try parse(source) }
+        guard case .unknownFunction(_, _) = error else { Issue.record("Threw the wrong error: \(error)"); return }
+    }
 }

@@ -18,12 +18,13 @@ extension UnresolvedStatement {
 
         case .functionDeclaration(let decl):
             let function = try decl.resolveFunction(in: scope)
-            // TODO: Regster in scope
+            scope.register(function: function)
             return .functionDeclaration(function)
 
         case .functionCall(let name, arguments: let arguments):
+            guard let function = scope.function(forName: name.value) else { throw ParserError.unknownFunction(name.value, name.location) }
             return try .functionCall(name.value, arguments: arguments.map {
-                // TODO: Look up the called function and match arguments to parameters
+                // TODO: Match arguments to parameters
                 return try $0.map { try $0.resolve(in: scope, declaredType: nil) }
             })
 

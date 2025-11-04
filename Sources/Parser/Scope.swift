@@ -2,6 +2,7 @@ public class Scope {
     private let parent: Scope?
 
     private var variables: [String : Variable] = [:]
+    private var functions: [String : Function] = [:]
     private var types: [String : ResolvedType] = [:]
 
     public init() {
@@ -21,6 +22,14 @@ public class Scope {
 
     public func register(variable: Variable) {
         variables[variable.name] = variable
+    }
+
+    public func register(function: Function) {
+        functions[function.name] = function
+    }
+
+    public func function(forName name: String) -> Function? {
+        return functions[name] ?? parent?.function(forName: name)
     }
 
     public func type(forName name: String) -> ResolvedType? {

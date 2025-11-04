@@ -35,5 +35,6 @@ public enum ParserError: Error {
     case invalidToken(Token)
     case unresolvedType(FileLocation)
     case unknownVariable(String, FileLocation)
+    case unknownFunction(String, FileLocation)
     case typeMismatch(declared: String, inferred: String, location: FileLocation)
 }

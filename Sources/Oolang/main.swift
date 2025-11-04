@@ -42,7 +42,9 @@ do {
         fputs("\(inputFile.lastPathComponent):\(location.line):\(location.column):Type mismatch; expected: \(declared), was: (\(inferred)\n", stderr)
     case .unknownVariable(let name, let location):
         fputs("\(inputFile.lastPathComponent):\(location.line):\(location.column):Unknown variable: \(name)\n", stderr)
-    }
+    case .unknownFunction(let name, let location):
+        fputs("\(inputFile.lastPathComponent):\(location.line):\(location.column):Unknown function: \(name)\n", stderr)
+}
     exit(2)
 }
 
