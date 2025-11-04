@@ -2,7 +2,7 @@ import Lexer
 
 struct ObjectDeclaration {
     var name: Located<String>
-    var methods: [FunctionDeclaration] = []
+    var pureMethods: [FunctionDeclaration] = []
     var mutatingMethods: [FunctionDeclaration] = []
     var fields: [VariableDeclaration] = []
     var staticMethods: [FunctionDeclaration] = []
@@ -24,9 +24,9 @@ extension ObjectDeclaration: StatementParseable {
 
         _ = try stream.next().requiring { $0.value == "{" }
 
-        while let t = stream.peek(), t.value != "data" && t.value != "static" && t.value != "}" {
+        while let t = stream.peek(), t.value != "data" && t.value != "mutating" && t.value != "static" && t.value != "}" {
             let method = try FunctionDeclaration(parsing: stream)
-            methods.append(method)
+            pureMethods.append(method)
         }
 
         if stream.peek()?.value == "mutating" {
@@ -69,7 +69,7 @@ extension ObjectDeclaration: StatementParseable {
     func resolveObject(in scope: Scope) throws -> Object {
         return Object(
             name: name.value,
-            methods: try methods.map { try $0.resolveFunction(in: scope) },
+            pureMethods: try pureMethods.map { try $0.resolveFunction(in: scope) },
             mutatingMethods: try mutatingMethods.map { try $0.resolveFunction(in: scope) },
             fields: try fields.map { try $0.resolveVariable(in: scope) },
             staticMethods: try staticMethods.map { try $0.resolveFunction(in: scope) },

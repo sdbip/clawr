@@ -95,7 +95,7 @@ struct ObjectDeclarationTests {
         let ast = try parse(source)
         #expect(ast == [.objectDeclaration(Object(
             name: "S",
-            methods: [Function(name: "method", returnType: .builtin(.integer), parameters: [], body: [.returnStatement(.integer(42))])],
+            pureMethods: [Function(name: "method", returnType: .builtin(.integer), parameters: [], body: [.returnStatement(.integer(42))])],
         ))])
     }
 
@@ -110,7 +110,7 @@ struct ObjectDeclarationTests {
         let ast = try parse(source)
         #expect(ast == [.objectDeclaration(Object(
             name: "S",
-            methods: [
+            pureMethods: [
                 Function(name: "method1", returnType: .builtin(.integer), parameters: [], body: [.returnStatement(.integer(42))]),
                 Function(name: "method2", returnType: .builtin(.integer), parameters: [], body: [.returnStatement(.integer(43))]),
             ],
