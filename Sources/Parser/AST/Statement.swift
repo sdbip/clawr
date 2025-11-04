@@ -58,7 +58,7 @@ public struct Function: Equatable {
     }
 
     static func resolvedName(base: String, labels: [String?]) -> String {
-        return "\(base)(\(labels.map { "\($0 ?? "_"):"}))"
+        return "\(base)(\(labels.map { "\($0 ?? "_"):"}.joined(separator: ",")))"
     }
 }
 

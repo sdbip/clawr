@@ -24,8 +24,18 @@ extension FunctionCall: StatementParseable {
         _ = try stream.next().requiring { $0.value == "("}
         var arguments: [Labeled<UnresolvedExpression>] = []
         while stream.peek()?.value != ")" {
-            let expression = try UnresolvedExpression.parse(stream: stream)
-            arguments.append(.unlabeled(expression))
+            let clone = stream.clone()
+            _ = clone.next()
+            if clone.peek()?.value == ":" {
+                let label = try stream.next().requiring { $0.kind == .identifier }.value
+                _ = stream.next()
+                let expression = try UnresolvedExpression.parse(stream: stream)
+                arguments.append(.labeled(expression, label: label))
+            } else {
+                let expression = try UnresolvedExpression.parse(stream: stream)
+                arguments.append(.unlabeled(expression))
+            }
+
             if stream.peek()?.value == "," {
                 _ = stream.next()
             } else {

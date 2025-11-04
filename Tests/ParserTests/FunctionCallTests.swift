@@ -48,6 +48,20 @@ struct FunctionCallTests {
         ])
     }
 
+    @Test(
+        "Resolves function name",
+        arguments: [
+            ("f(arg: 12)", "f(arg:)"),
+            ("f()", "f()"),
+            ("f(12)", "f(_:)"),
+        ]
+    )
+    func resolved_name(source: String, expected: String) async throws {
+        let stream = TokenStream(source: source)
+        let function = try FunctionCall(parsing: stream)
+        #expect(function.resolvedName == expected)
+    }
+
     @Test("Fails to resolve unknown function")
     func fails_to_resolve() async throws {
         let source = "f()"
