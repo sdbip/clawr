@@ -25,7 +25,7 @@ extension ObjectDeclaration: StatementParseable {
 
         _ = try stream.next().requiring { $0.value == "{" }
 
-        while let t = stream.peek(), t.value != "data" && t.value != "mutating" && t.value != "static" && t.value != "}" {
+        while let t = stream.peek(), !sectionEnders.contains(t.value) {
             let method = try FunctionDeclaration(parsing: stream)
             pureMethods.append(method)
         }
@@ -34,7 +34,7 @@ extension ObjectDeclaration: StatementParseable {
             _ = stream.next()
             _ = try stream.next().requiring { $0.value == ":" }
 
-            while let t = stream.peek(), t.value != "data" && t.value != "}" {
+            while let t = stream.peek(), !sectionEnders.contains(t.value)  {
                 let method = try FunctionDeclaration(parsing: stream)
                 mutatingMethods.append(method)
             }
@@ -44,7 +44,7 @@ extension ObjectDeclaration: StatementParseable {
             _ = stream.next()
             _ = try stream.next().requiring { $0.value == ":" }
 
-            while let t = stream.peek(), t.value != "data" && t.value != "}" {
+            while let t = stream.peek(), !sectionEnders.contains(t.value)  {
                 if FunctionDeclaration.isNext(in: stream) {
                     try staticMethods.append(FunctionDeclaration(parsing: stream))
                 } else if VariableDeclaration.isNext(in: stream) {
@@ -59,7 +59,7 @@ extension ObjectDeclaration: StatementParseable {
             _ = stream.next()
             _ = try stream.next().requiring { $0.value == ":" }
 
-            while stream.peek()?.value != "}" {
+            while let t = stream.peek(), !sectionEnders.contains(t.value)  {
                 try fields.append(VariableDeclaration(parsing: stream, defaultSemantics: .isolated))
 
                 if stream.peek()?.value == "," {
@@ -83,3 +83,7 @@ extension ObjectDeclaration: StatementParseable {
         )
     }
 }
+
+let sectionEnders = [
+    "data", "static", "mutating", "}"
+]
