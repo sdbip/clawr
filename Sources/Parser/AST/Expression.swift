@@ -23,7 +23,7 @@ public extension LookupTarget {
 }
 
 extension Expression {
-    var type: ResolvedType {
+    public var type: ResolvedType {
         switch self {
         case .boolean(_): .builtin(.boolean)
         case .integer(_): .builtin(.integer)

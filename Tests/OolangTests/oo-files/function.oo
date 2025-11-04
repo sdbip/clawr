@@ -1,4 +1,4 @@
-func f() {
-    print 2
+func f(arg: integer) {
+    print arg
 }
-f()
+f(arg: 2)
