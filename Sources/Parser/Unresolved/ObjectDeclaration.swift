@@ -1,10 +1,10 @@
 import Lexer
 
 struct ObjectDeclaration {
-    var name: String
-    var methods: [FunctionDeclaration]
-    var fields: [VariableDeclaration]
-    var staticMethods: [FunctionDeclaration]
+    var name: Located<String>
+    var methods: [FunctionDeclaration] = []
+    var fields: [VariableDeclaration] = []
+    var staticMethods: [FunctionDeclaration] = []
 }
 
 extension ObjectDeclaration: StatementParseable {
@@ -18,8 +18,8 @@ extension ObjectDeclaration: StatementParseable {
 
     init(parsing stream: TokenStream) throws {
         _ = try stream.next().requiring { $0.value == "object" }
-        let name = try stream.next().requiring { $0.kind == .identifier }.value
-        self.init(name: name, methods: [], fields: [], staticMethods: [])
+        let nameToken = try stream.next().requiring { $0.kind == .identifier }
+        self.init(name: (nameToken.value, location: nameToken.location))
 
         _ = try stream.next().requiring { $0.value == "{" }
 
@@ -53,5 +53,14 @@ extension ObjectDeclaration: StatementParseable {
             }
         }
         _ = try stream.next().requiring { $0.value == "}" }
+    }
+
+    func resolveObject(in scope: Scope) throws -> Object {
+        return Object(
+            name: name.value,
+            methods: try methods.map { try $0.resolveFunction(in: scope) },
+            fields: try fields.map { try $0.resolveVariable(in: scope) },
+            staticMethods: try staticMethods.map { try $0.resolveFunction(in: scope) },
+        )
     }
 }

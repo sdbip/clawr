@@ -36,12 +36,8 @@ extension UnresolvedStatement {
             return .dataStructureDeclaration(data)
 
         case .objectDeclaration(let decl):
-            return try .objectDeclaration(Object(
-                name: decl.name,
-                methods: decl.methods.map { try $0.resolveFunction(in: scope) },
-                fields: decl.fields.map { try $0.resolveVariable(in: scope) },
-                staticMethods: decl.staticMethods.map { try $0.resolveFunction(in: scope) },
-            ))
+            let object = try decl.resolveObject(in: scope)
+            return .objectDeclaration(object)
 
         case .printStatement(let expression):
             return try .printStatement(expression.resolve(in: scope, declaredType: nil))
