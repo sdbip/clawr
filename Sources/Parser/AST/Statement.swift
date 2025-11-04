@@ -3,6 +3,7 @@ public enum Statement: Equatable {
     case functionDeclaration(Function)
     case functionCall(String, arguments: [Labeled<Expression>])
     case dataStructureDeclaration(DataStructure)
+    case objectDeclaration(Object)
     case printStatement(Expression)
     case returnStatement(Expression)
 }
@@ -67,6 +68,16 @@ public struct DataStructure: Equatable {
     public var fields: [Variable]
 
     public init(name: String, fields: [Variable]) {
+        self.name = name
+        self.fields = fields
+    }
+}
+
+public struct Object: Equatable {
+    public var name: String
+    public var fields: [Variable]
+
+    public init(name: String, fields: [Variable] = []) {
         self.name = name
         self.fields = fields
     }

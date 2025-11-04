@@ -80,6 +80,9 @@ public func irgen(statements: [Parser.Statement]) -> [Codegen.Statement] {
             result.append(.call(.name("print"), arguments: [toString(expression: expression)]))
         case .returnStatement(let expression):
             result.append(.return(irgen(expression: expression)))
+        case .objectDeclaration(_):
+            #warning("Object not yet supported")
+            fatalError("Object not yet supported")
         }
     }
 

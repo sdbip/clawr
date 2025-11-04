@@ -14,6 +14,7 @@ func parse(_ stream: TokenStream) throws -> [UnresolvedStatement] {
         PrintStatement.self,
         VariableDeclaration.self,
         DataStructureDeclaration.self,
+        ObjectDeclaration.self,
         FunctionDeclaration.self,
         FunctionCall.self,
     ]
