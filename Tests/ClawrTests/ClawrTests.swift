@@ -73,8 +73,8 @@ func compile_clawr_code(file: TestInputFile) async throws {
 
 private func clawrInputFiles() -> [TestInputFile] {
     let resourceURL = Bundle.module.resourceURL!
-    return try! FileManager.default.contentsOfDirectory(at: resourceURL.appending(component: "oo-files"), includingPropertiesForKeys: [])
-        .filter { $0.pathExtension == "oo" }
+    return try! FileManager.default.contentsOfDirectory(at: resourceURL.appending(component: "cwr-files"), includingPropertiesForKeys: [])
+        .filter { $0.pathExtension == "cwr" }
         .map {
             let name = $0.deletingPathExtension().lastPathComponent
                 .replacing("-", with: " ")

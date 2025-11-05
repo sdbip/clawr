@@ -11,7 +11,7 @@ guard FileManager.default.fileExists(atPath: headersDirectoryURL.appending(path:
 
 // azc <path-to-source.az>
 guard CommandLine.arguments.count > 1 else {
-    fputs("Usage: rwrc <path/to/source.oo>\n\n", stderr)
+    fputs("Usage: rwrc <path/to/source.cwr>\n\n", stderr)
     exit(2)
 }
 

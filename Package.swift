@@ -24,7 +24,7 @@ let package = Package(
             dependencies: ["Clawr"],
             resources: [
                 .copy("c-files"),
-                .copy("oo-files"),
+                .copy("cwr-files"),
             ]
         ),
         .target(name: "Codegen"),
