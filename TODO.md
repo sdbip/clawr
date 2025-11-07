@@ -18,6 +18,10 @@
 - Remove the `_data` struct?
   - Prefix field names with `_` instead of `.`
   - Prefix unnecessary for `data`
+- Replace the `print` command with a `print(_:)` function
+  - Requires `trait HasStringRepresentation`
+  - Requires bridging to C implementation
+  - Requires the C function to be known to the `Scope`
 
 ## Possible Next Features
 
