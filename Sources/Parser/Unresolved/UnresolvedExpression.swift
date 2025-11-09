@@ -151,6 +151,8 @@ private func binaryOperator(for token: String) -> BinaryOperator? {
     switch token {
     case "<<": .leftShift
     case ">>": .rightShift
+    case "+": .addition
+    case "*": .multiplication
     default: nil
     }
 }

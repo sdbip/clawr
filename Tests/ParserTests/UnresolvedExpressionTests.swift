@@ -46,4 +46,20 @@ struct UnresolvedExpressionTests {
         #expect(op == .rightShift)
         #expect(i == 2)
     }
+
+    @Test("Addition")
+    func addition() async throws {
+        let source = "let x = 1 + 2"
+        let ast = try parse(source)
+        guard case .variableDeclaration(_, initializer: let expr) = ast.first else { Issue.record("Unexpected expression: \(ast)"); return }
+        #expect(expr == .binaryOperation(left: .integer(1), operator: .addition, right: .integer(2)))
+    }
+
+    @Test("Multiplication")
+    func multiplication() async throws {
+        let source = "let x = 2 * 3"
+        let ast = try parse(source)
+        guard case .variableDeclaration(_, initializer: let expr) = ast.first else { Issue.record("Unexpected expression: \(ast)"); return }
+        #expect(expr == .binaryOperation(left: .integer(2), operator: .multiplication, right: .integer(3)))
+    }
 }

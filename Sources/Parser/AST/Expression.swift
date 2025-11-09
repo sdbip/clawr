@@ -17,6 +17,8 @@ public enum UnaryOperator: Equatable {
 public enum BinaryOperator: Equatable {
     case leftShift
     case rightShift
+    case addition
+    case multiplication
 }
 
 public indirect enum LookupTarget: Equatable {
