@@ -82,7 +82,7 @@ struct VariableDeclarationTests {
         let source = "let x = ~0b1010"
         let ast = try parse(source)
         #expect(ast == [
-            .variableDeclaration(Variable(name: "x", semantics: .immutable, type: .builtin(.bitfield)), initializer: .bitwiseNegation(of: .bitfield(0b1010)))
+            .variableDeclaration(Variable(name: "x", semantics: .immutable, type: .builtin(.bitfield)), initializer: .unaryOperation(operator: .bitfieldNegation, expression: .bitfield(0b1010)))
         ])
     }
 

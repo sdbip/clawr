@@ -6,7 +6,11 @@ public indirect enum Expression: Equatable {
     case identifier(String, type: ResolvedType)
     case dataStructureLiteral(ResolvedType, fieldValues: [String: Expression])
     case memberLookup(LookupTarget)
-    case bitwiseNegation(of: Expression)
+    case unaryOperation(operator: UnaryOperator, expression: Expression)
+
+public enum UnaryOperator: Equatable {
+    case bitfieldNegation
+}
 }
 
 public indirect enum LookupTarget: Equatable {
@@ -33,7 +37,7 @@ extension Expression {
         case .identifier(_, type: let t): t
         case .dataStructureLiteral(let t, fieldValues: _): t
         case .memberLookup(let target): target.type
-        case .bitwiseNegation(of: let ex): ex.type
+        case .unaryOperation(operator: _, expression: let ex): ex.type
         }
     }
 }

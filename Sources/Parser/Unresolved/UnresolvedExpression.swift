@@ -8,7 +8,7 @@ indirect enum UnresolvedExpression: Equatable {
     case identifier(String, location: FileLocation)
     case dataStructureLiteral(DataStructureLiteral, location: FileLocation)
     case memberLookup(UnresolvedLookupTarget)
-    case bitwiseNegation(of: UnresolvedExpression, location: FileLocation)
+    case unaryOperation(operator: UnaryOperator, expression: UnresolvedExpression, location: FileLocation)
 }
 
 indirect enum UnresolvedLookupTarget: Equatable {
@@ -27,7 +27,7 @@ extension UnresolvedExpression {
         case .dataStructureLiteral(_, let l): return l
         case .memberLookup(.member(_, member: _, location: let l)): return l
         case .identifier(_, let l): return l
-        case .bitwiseNegation(of: _, location: let l): return l
+        case .unaryOperation(operator: _, expression: _, location: let l): return l
         }
     }
     static func parse(stream: TokenStream) throws -> UnresolvedExpression {
@@ -54,7 +54,7 @@ extension UnresolvedExpression {
         switch token.value {
         case "~":
             _ = stream.next()
-            return try .bitwiseNegation(of: expression(parsing: stream), location: token.location)
+            return try .unaryOperation(operator: .bitfieldNegation, expression: expression(parsing: stream), location: token.location)
         case "true":
             _ = stream.next()
             return .boolean(true, location: token.location)
@@ -111,9 +111,9 @@ extension UnresolvedExpression {
             return .dataStructureLiteral(.data(dataType), fieldValues: Dictionary(uniqueKeysWithValues: fieldValues))
         case .memberLookup(let lookup):
             return .memberLookup(try resolve(lookup: lookup, in: scope))
-        case .bitwiseNegation(of: let expr, location: let location):
+        case .unaryOperation(operator: let op, expression: let expr, location: let location):
             // TODO: Check that the resolved type supports ~x
-            return try .bitwiseNegation(of: expr.resolve(in: scope, declaredType: nil))
+            return try .unaryOperation(operator: op, expression: expr.resolve(in: scope, declaredType: declaredType))
         }
     }
 
