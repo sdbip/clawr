@@ -26,9 +26,9 @@ extension UnresolvedExpression {
         case .bitfield(_, let l): return l
         case .real(_, let l): return l
         case .dataStructureLiteral(_, let l): return l
-        case .memberLookup(.member(_, member: _, location: let l)): return l
+        case .memberLookup(.member(_, _, location: let l)): return l
         case .identifier(_, let l): return l
-        case .unaryOperation(operator: _, expression: _, location: let l): return l
+        case .unaryOperation(_, _, location: let l): return l
         case .binaryOperation(_, _, _, location: let l): return l
         }
     }
