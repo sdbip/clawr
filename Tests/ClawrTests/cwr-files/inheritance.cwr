@@ -1,0 +1,29 @@
+object abstract Super {
+
+    func value() => 42 // self.value
+
+data:
+    value: integer
+
+// factory:
+//     func new(value: integer) => { value: value }
+}
+
+object Sub: Super {
+
+    // func subValue() => self.subValue
+    func subValue() => 42
+
+data:
+    subValue: integer
+
+// factory:
+//    func init(subValue: integer) => {
+//    //     super.init(value: superValue)
+//        subValue: subValue
+//    }
+}
+
+print 2
+// let x: Sub.init(superValue: 13, subValue: 11)
+// print x.superValue() - x.subValue()
