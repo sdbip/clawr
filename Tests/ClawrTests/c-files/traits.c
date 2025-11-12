@@ -15,7 +15,7 @@ string* Struct_toString(void* self) {
     box* box = __clawr_make_box(((Struct*)self)->Struct.value, __integer_box_info);
     HasStringRepresentation_vtable* vtable = __clawr_trait_vtable(box, &HasStringRepresentation_trait);
     string* result = vtable->toString(box);
-    box = oo_release(box);
+    box = releaseRC(box);
     return result;
 }
 
@@ -40,6 +40,6 @@ int main() {
 //        print x
     print(x);
 
-    x = oo_release(x);
+    x = releaseRC(x);
     return 0;
 }

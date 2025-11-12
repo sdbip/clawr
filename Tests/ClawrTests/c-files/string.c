@@ -4,6 +4,6 @@ int main() {
     // print "string"
     string* s = string_format("string");
     print(s);
-    oo_release(s);
+    releaseRC(s);
     return 0;
 }

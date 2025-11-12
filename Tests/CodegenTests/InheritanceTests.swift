@@ -245,7 +245,7 @@ struct InheritanceTests {
                         "y",
                         type: "Object*",
                         initializer: .call(
-                            .name("oo_retain"),
+                            .name("retainRC"),
                             arguments: [
                                 .reference(.name("x"))
                             ]
@@ -327,7 +327,7 @@ struct InheritanceTests {
                     .assign(
                         .name("box1"),
                         value: .call(
-                            .name("oo_release"),
+                            .name("releaseRC"),
                             arguments: [.reference(.name("box1"))]
                         )
                     ),
@@ -375,7 +375,7 @@ struct InheritanceTests {
                     .assign(
                         .name("box2"),
                         value: .call(
-                            .name("oo_release"),
+                            .name("releaseRC"),
                             arguments: [.reference(.name("box2"))]
                         )
                     ),
@@ -400,7 +400,7 @@ struct InheritanceTests {
                     .assign(
                         .name("box1"),
                         value: .call(
-                            .name("oo_release"),
+                            .name("releaseRC"),
                             arguments: [.reference(.name("box3"))]
                         )
                     ),
@@ -448,21 +448,21 @@ struct InheritanceTests {
                     .assign(
                         .name("box4"),
                         value: .call(
-                            .name("oo_release"),
+                            .name("releaseRC"),
                             arguments: [.reference(.name("box4"))]
                         )
                     ),
                     .assign(
                         .name("x"),
                         value: .call(
-                            .name("oo_release"),
+                            .name("releaseRC"),
                             arguments: [.reference(.name("x"))]
                         )
                     ),
                     .assign(
                         .name("y"),
                         value: .call(
-                            .name("oo_release"),
+                            .name("releaseRC"),
                             arguments: [.reference(.name("y"))]
                         )
                     ),

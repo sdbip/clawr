@@ -97,7 +97,7 @@ int main() {
     Object_new_value(x, 42);
 
     // mut y = x
-    Object* y = oo_retain(x);
+    Object* y = retainRC(x);
 
     // x.setValue(2)
     x = oo_preModify(x);
@@ -110,24 +110,24 @@ int main() {
     // print y.objectValue()
     box* box1 = __clawr_make_box(Object_objectValue(y), __integer_box_info);
     print(box1);
-    box1 = oo_release(box1);
+    box1 = releaseRC(box1);
 
     // print y.value()
     box* box2 = __clawr_make_box(((__Super_vtable*)y->header.is_a.object->vtable)->value(y), __integer_box_info);
     print(box2);
-    box2 = oo_release(box2);
+    box2 = releaseRC(box2);
 
     // print x.objectValue()
     box* box3 = __clawr_make_box(Object_objectValue(x), __integer_box_info);
     print(box3);
-    box3 = oo_release(box3);
+    box3 = releaseRC(box3);
 
     // print x.value()
     box* box4 = __clawr_make_box(((__Super_vtable*)x->header.is_a.object->vtable)->value(x), __integer_box_info);
     print(box4);
-    box4 = oo_release(box4);
+    box4 = releaseRC(box4);
 
-    x = oo_release(x);
-    y = oo_release(y);
+    x = releaseRC(x);
+    y = releaseRC(y);
     return 0;
 }

@@ -28,7 +28,7 @@ typedef struct HasStringRepresentation_vtable {
 static const __clawr_trait_descriptor HasStringRepresentation_trait = { .name = "HasStringRepresentation" };
 
 static inline string* string_toString(void* self) {
-    return oo_retain(self);
+    return retainRC(self);
 }
 static const HasStringRepresentation_vtable string_HasStringRepresentation_vtable = {
     .toString = string_toString
@@ -70,7 +70,7 @@ static inline void print(__clawr_rc_header* const i) {
 
     string* s = vtable->toString(i);
     printf("%s\n", s->data.buffer);
-    s = oo_release(s);
+    s = releaseRC(s);
 }
 
 #endif /*.CLAWR_STRING_H */

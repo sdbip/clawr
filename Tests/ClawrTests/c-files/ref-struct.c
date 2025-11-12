@@ -16,7 +16,7 @@ int main() {
     x->Struct.value = 42;
 
 //        let y = x
-    Struct* y = oo_retain(x);
+    Struct* y = retainRC(x);
 
 //        x.value = 2
     x = oo_preModify(x);
@@ -25,13 +25,13 @@ int main() {
 //        print y.value
     box* ybox = __clawr_make_box(y->Struct.value, __integer_box_info);
     print(ybox);
-    ybox = oo_release(ybox);
+    ybox = releaseRC(ybox);
 
     box* xbox = __clawr_make_box(x->Struct.value, __integer_box_info);
     print(xbox);
-    xbox = oo_release(xbox);
+    xbox = releaseRC(xbox);
 
-    x = oo_release(x);
-    y = oo_release(y);
+    x = releaseRC(x);
+    y = releaseRC(y);
     return 0;
 }

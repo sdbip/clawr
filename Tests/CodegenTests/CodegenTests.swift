@@ -41,7 +41,7 @@ struct CodegenTests {
                     .assign(
                         .name("s"),
                         value: .call(
-                            .name("oo_release"),
+                            .name("releaseRC"),
                             arguments: [.reference(.name("s"))])),
                 ])
             ])

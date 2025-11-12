@@ -75,7 +75,7 @@ struct TraitsTests {
                         .assign(
                             .name("box"),
                             value: .call(
-                                .name("oo_release"),
+                                .name("releaseRC"),
                                 arguments: [.literal("box")]
                             )
                         ),
@@ -150,7 +150,7 @@ struct TraitsTests {
                     .assign(
                         .name("x"),
                         value: .call(
-                            .name("oo_release"),
+                            .name("releaseRC"),
                             arguments: [.literal("x")]
                         )
                     ),

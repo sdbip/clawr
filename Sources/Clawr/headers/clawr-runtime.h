@@ -138,7 +138,7 @@ static inline void* allocRC(__clawr_type_info const typeInfo, uintptr_t const se
 
 /// @brief Increment a reference counter
 /// @param header the header of the entity to retain
-static inline __clawr_rc_header* oo_retain(__clawr_rc_header* const header) {
+static inline __clawr_rc_header* retainRC(__clawr_rc_header* const header) {
     if (header) atomic_fetch_add_explicit(&header->refs, 1, memory_order_relaxed);
     return header;
 }
@@ -147,7 +147,7 @@ static inline __clawr_rc_header* oo_retain(__clawr_rc_header* const header) {
 /// If the reference counter becomes zero, the entity is descoped
 /// @param header the header of the entity to release
 /// @returns `NULL` so that the variable can be assigned to the function call.
-static inline void* oo_release(__clawr_rc_header* const header) {
+static inline void* releaseRC(__clawr_rc_header* const header) {
     if (header && (atomic_fetch_sub_explicit(&header->refs, 1, memory_order_acq_rel) & __clawr_REFC_BITMASK) == 1) {
         free(header);
     }
@@ -201,7 +201,7 @@ static inline void* oo_preModify(__clawr_rc_header* const header) {
 
     // Finished copying. Drop our strong ref to the original entity and unset the flag.
     atomic_fetch_and_explicit(&header->refs, ~__clawr_COPYING_FLAG, memory_order_acquire);
-    oo_release(header);
+    releaseRC(header);
 
     return newEntity;
 }

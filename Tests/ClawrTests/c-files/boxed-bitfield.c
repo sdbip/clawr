@@ -8,6 +8,6 @@ int main() {
     // print bf
     print(bf);
 
-    bf = oo_release(bf);
+    bf = releaseRC(bf);
     return 0;
 }
