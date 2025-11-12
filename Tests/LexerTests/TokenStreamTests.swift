@@ -107,7 +107,7 @@ struct TokenStreamTests {
     func multple_cpp_comment() async throws {
         let tokens = tokenize("""
             // ignored text
-            // ignored text
+             // ignored text
             // ignored text
             let x
             """)

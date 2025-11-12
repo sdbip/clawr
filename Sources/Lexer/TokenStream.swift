@@ -68,70 +68,6 @@ public class TokenStream {
         return Token(value: value, kind: kind(for: value), location: location.location)
     }
 
-    private struct Location {
-        private let source: String
-        private var index: String.Index
-        private(set) var location: FileLocation
-
-        var isAtEnd: Bool {
-            index == source.endIndex
-        }
-
-        var currentCharacter: Character {
-            return source[index]
-        }
-
-        init(source: String) {
-            self.source = source
-            self.index = source.startIndex
-            self.location = FileLocation(line: 1, column: 1)
-        }
-
-        init(source: String, nextIndex: String.Index, location: FileLocation) {
-            self.source = source
-            self.index = nextIndex
-            self.location = location
-        }
-
-        func matches(string: String) -> Bool {
-            return source[index...].hasPrefix(string)
-        }
-
-        func stringValue(upto end: Location) -> String {
-            return String(source[index..<end.index])
-        }
-
-        mutating func skip(while predicate: (Character) -> Bool) {
-            while !isAtEnd && predicate(source[index]) {
-                advance()
-            }
-        }
-
-        mutating func advance() {
-            if source[index].isNewline {
-                location.line += 1
-                location.column = 1
-            } else {
-                location.column += 1
-            }
-            index = source.index(after: index)
-        }
-
-        mutating func advance(by count: Int) {
-            for _ in 0..<count { advance() }
-        }
-
-        func advanced() -> Location {
-            return advanced(by: 1)
-        }
-
-        func advanced(by count: Int) -> Location {
-            var other = self
-            other.advance(by: count)
-            return other
-        }
-    }
-
     private func skipComments(andNewlines skippingNewlines: Bool) {
         guard !location.isAtEnd else { return }
         guard location.currentCharacter == "/" else { return }
@@ -150,7 +86,72 @@ public class TokenStream {
             location = end
         }
 
+        location.skip { $0.isWhitespace && (skippingNewlines || !$0.isNewline) }
         skipComments(andNewlines: skippingNewlines)
+    }
+}
+
+private struct Location {
+    private let source: String
+    private var index: String.Index
+    private(set) var location: FileLocation
+
+    var isAtEnd: Bool {
+        index == source.endIndex
+    }
+
+    var currentCharacter: Character {
+        return source[index]
+    }
+
+    init(source: String) {
+        self.source = source
+        self.index = source.startIndex
+        self.location = FileLocation(line: 1, column: 1)
+    }
+
+    init(source: String, nextIndex: String.Index, location: FileLocation) {
+        self.source = source
+        self.index = nextIndex
+        self.location = location
+    }
+
+    func matches(string: String) -> Bool {
+        return source[index...].hasPrefix(string)
+    }
+
+    func stringValue(upto end: Location) -> String {
+        return String(source[index..<end.index])
+    }
+
+    mutating func skip(while predicate: (Character) -> Bool) {
+        while !isAtEnd && predicate(source[index]) {
+            advance()
+        }
+    }
+
+    mutating func advance() {
+        if source[index].isNewline {
+            location.line += 1
+            location.column = 1
+        } else {
+            location.column += 1
+        }
+        index = source.index(after: index)
+    }
+
+    mutating func advance(by count: Int) {
+        for _ in 0..<count { advance() }
+    }
+
+    func advanced() -> Location {
+        return advanced(by: 1)
+    }
+
+    func advanced(by count: Int) -> Location {
+        var other = self
+        other.advance(by: count)
+        return other
     }
 }
 
