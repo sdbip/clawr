@@ -101,7 +101,20 @@ struct TokenStreamTests {
             Token(value: "let", kind: .keyword, location: FileLocation(line: 1, column: 1)),
             Token(value: "x", kind: .identifier, location: FileLocation(line: 2, column: 1)),
         ])
+    }
 
+    @Test("C++-style comments on consequtive lines")
+    func multple_cpp_comment() async throws {
+        let tokens = tokenize("""
+            // ignored text
+            // ignored text
+            // ignored text
+            let x
+            """)
+        #expect(tokens == [
+            Token(value: "let", kind: .keyword, location: FileLocation(line: 4, column: 1)),
+            Token(value: "x", kind: .identifier, location: FileLocation(line: 4, column: 5)),
+        ])
     }
 
     @Test("C-style comment is ignored")

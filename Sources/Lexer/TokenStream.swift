@@ -148,8 +148,9 @@ public class TokenStream {
             end.skip { $0.isWhitespace && (skippingNewlines || !$0.isNewline) }
 
             location = end
-            skipComments(andNewlines: skippingNewlines)
         }
+
+        skipComments(andNewlines: skippingNewlines)
     }
 }
 
