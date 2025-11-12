@@ -6,7 +6,7 @@
 #include <stdio.h>    // printf
 #include "clawr-string.h"
 
-typedef struct box
+typedef struct
 {
     __clawr_rc_header header;
     uintptr_t boxed;

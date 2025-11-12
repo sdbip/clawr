@@ -46,8 +46,8 @@ public func irgen(statements: [Parser.Statement]) -> [Codegen.Statement] {
             result.append(.structDeclaration(
                 dataStructure.name,
                 fields: [
-                    Field(type: .simple("struct __clawr_rc_header"), name: "header"),
-                    Field(type: .simple("struct __\(dataStructure.name)_data"), name: dataStructure.name),
+                    Field(type: .simple("__clawr_rc_header"), name: "header"),
+                    Field(type: .simple("__\(dataStructure.name)_data"), name: dataStructure.name),
                 ]
             ))
             result.append(.variable(

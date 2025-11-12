@@ -1,11 +1,11 @@
 #include "clawr-stdlib.h"
 #include "clawr-runtime.h"
 
-//        struct Struct { value: integer }
-struct __Struct_data { integer value; };
-typedef struct Struct {
-    struct __clawr_rc_header header;
-    struct __Struct_data Struct;
+//        data Struct { value: integer }
+typedef struct { integer value; } __Struct_data;
+typedef struct {
+    __clawr_rc_header header;
+    __Struct_data Struct;
 } Struct;
 
 //        model Struct: HasStringRepresentation {

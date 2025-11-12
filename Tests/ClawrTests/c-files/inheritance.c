@@ -8,12 +8,12 @@
 // }
 
 // data: value: integer
-struct __Super_data { integer value; };
-typedef struct Super {
-    struct __clawr_rc_header header;
-    struct __Super_data Super;
+typedef struct { integer value; } __Super_data;
+typedef struct {
+    __clawr_rc_header header;
+    __Super_data Super;
 } Super;
-typedef struct __Super_vtable {
+typedef struct {
 // func setValue(_ value: integer)
     void (*setValue)(Super*, integer);
 // func value() -> integer
@@ -58,11 +58,11 @@ __clawr_type_info __Super_info = { .object = &__Super_object_type };
 // }
 
 // data: value: integer
-struct __Object_data { integer value; };
-typedef struct Object {
-    struct __clawr_rc_header header;
-    struct __Super_data Super;
-    struct __Object_data Object;
+typedef struct { integer value; } __Object_data;
+typedef struct {
+    __clawr_rc_header header;
+    __Super_data Super;
+    __Object_data Object;
 } Object;
 
 // factory: func new(value: integer) => {

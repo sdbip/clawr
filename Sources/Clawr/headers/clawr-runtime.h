@@ -38,7 +38,7 @@ static const uintptr_t __clawr_ISOLATED       = __clawr_ISOLATION_FLAG;
 
 /// @brief Descriptor for a trait. The address of a descriptor is a unique identifier
 /// for a trait at compile-time; user code should define one static descriptor per trait.
-typedef struct __clawr_trait_descriptor {
+typedef struct {
     const char* name;
 } __clawr_trait_descriptor;
 
@@ -50,7 +50,7 @@ static const uintptr_t __clawr_INHERITANCE_FLAG = (uintptr_t)1 << (sizeof(uintpt
 /// - inheritance and conformance information
 /// - method lookup table if `object` type
 /// - field layout info if `data` type
-typedef struct __clawr_data_type {
+typedef struct {
 
     /// @brief The size of the entity payload for this type, and its semantics
     uintptr_t size;
@@ -69,7 +69,7 @@ typedef struct __clawr_data_type {
 /// - inheritance and conformance information
 /// - method lookup table if `object` type
 /// - field layout info if `data` type
-typedef struct __clawr_object_type {
+typedef struct {
 
     /// @brief The size of the entity payload for this type
     size_t size;
@@ -93,13 +93,13 @@ typedef struct __clawr_object_type {
 
 } __clawr_object_type;
 
-typedef union __clawr_type_info {
+typedef union {
     __clawr_data_type* data;
     __clawr_object_type* object;
 } __clawr_type_info;
 
 /// A header that is prefixed on all programmer types
-typedef struct __clawr_rc_header {
+typedef struct {
     /// @brief Reference counter and semantics flags (COPYING | ISOLATED | refcounter)
     atomic_uintptr_t refs;
     /// @brief Pointer to type data

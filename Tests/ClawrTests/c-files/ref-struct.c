@@ -2,10 +2,10 @@
 #include "clawr-runtime.h"
 
 //        data Struct { value: integer }
-struct __Struct_data { integer value; };
-typedef struct Struct {
-    struct __clawr_rc_header header;
-    struct __Struct_data Struct;
+typedef struct { integer value; } __Struct_data;
+typedef struct {
+    __clawr_rc_header header;
+    __Struct_data Struct;
 } Struct;
 __clawr_data_type __Struct_data_type = {.size = sizeof(Struct)};
 __clawr_type_info __Struct_info = {.data = &__Struct_data_type};

@@ -9,19 +9,19 @@
 // data string {
 //     length: integer
 // }
-struct __string_data {
+typedef struct {
     size_t length;
     char buffer[];
-};
-typedef struct string {
-    struct __clawr_rc_header header;
-    struct __string_data data;
+} __string_data;
+typedef struct {
+    __clawr_rc_header header;
+    __string_data data;
 } string;
 
 // trait HasStringRepresentation {
 //     func toString() -> string
 // }
-typedef struct HasStringRepresentation_vtable {
+typedef struct {
     string* (*toString)(void* self);
 } HasStringRepresentation_vtable;
 static const __clawr_trait_descriptor HasStringRepresentation_trait = { .name = "HasStringRepresentation" };
