@@ -1,0 +1,14 @@
+object O {
+    func value() => 42
+    // func value() => self.value
+
+data:
+    value: integer
+
+// factory:
+//     func new() => { value: 42 }
+}
+
+// let o = O.new()
+// print o.value
+print 42

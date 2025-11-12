@@ -36,6 +36,34 @@ public func irgen(statements: [Parser.Statement]) -> [Codegen.Statement] {
                 let assignments = irgen(assigned: initializer, to: .name(variable.name))
                 result.append(contentsOf: assignments)
             }
+        case .objectDeclaration(let object):
+            result.append(.structDeclaration(
+                "__\(object.name)_data",
+                fields: object.fields.map {
+                    Field(type: .simple($0.type.irName), name: $0.name)
+                }
+            ))
+            result.append(.structDeclaration(
+                object.name,
+                fields: [
+                    Field(type: .simple("__clawr_rc_header"), name: "header"),
+                    Field(type: .simple("__\(object.name)_data"), name: object.name),
+                ]
+            ))
+            result.append(.variable(
+                "__\(object.name)_object_type",
+                type: "__clawr_object_type",
+                initializer: .structInitializer([
+                    NamedValue(name: "size", value: .call(.name("sizeof"), arguments: [.reference(.name(object.name))]))
+                ])
+            ))
+            result.append(.variable(
+                "__\(object.name)_info",
+                type: "__clawr_type_info",
+                initializer: .structInitializer([
+                    NamedValue(name: "object", value: .reference(.address(of: .name("__\(object.name)_object_type"))))
+                ])
+            ))
         case .dataStructureDeclaration(let dataStructure):
             result.append(.structDeclaration(
                 "__\(dataStructure.name)_data",
@@ -80,9 +108,6 @@ public func irgen(statements: [Parser.Statement]) -> [Codegen.Statement] {
             result.append(.call(.name("print"), arguments: [toString(expression: expression)]))
         case .returnStatement(let expression):
             result.append(.return(irgen(expression: expression)))
-        case .objectDeclaration(_):
-            #warning("Object not yet supported")
-            fatalError("Object not yet supported")
         }
     }
 
@@ -137,11 +162,11 @@ func irgen(lookup: LookupTarget) -> Codegen.Expression {
         if target.type.isPointer {
             return .reference(.field(
                 target: .reference(.field(
-                    target: irgen(lookup: target), 
-                    name: target.type.name, 
+                    target: irgen(lookup: target),
+                    name: target.type.name,
                     isPointer: true
-                )), 
-                name: member, 
+                )),
+                name: member,
                 isPointer: false
             ))
         } else {

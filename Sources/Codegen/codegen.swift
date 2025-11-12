@@ -18,7 +18,7 @@ public func codegen(statement: Statement) -> String {
     switch statement {
     case .structDeclaration(let name, fields: let fields):
         return """
-            typedef struct \(name) {
+            typedef struct {
                 \( fields.map(codegen(field:)).joined(separator: ";") );
             } \(name);
             """
