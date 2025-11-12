@@ -132,13 +132,25 @@ func irgen(expression: Parser.Expression) -> Codegen.Expression {
 
 func irgen(lookup: LookupTarget) -> Codegen.Expression {
     switch lookup {
-    case .expression(let expression): irgen(expression: expression)
+    case .expression(let expression): return irgen(expression: expression)
     case .member(let target, member: let member, type: _):
-        .reference(.field(
-            target: irgen(lookup: target),
-            name: member,
-            isPointer: target.type.isPointer
-        ))
+        if target.type.isPointer {
+            return .reference(.field(
+                target: .reference(.field(
+                    target: irgen(lookup: target), 
+                    name: target.type.name, 
+                    isPointer: true
+                )), 
+                name: member, 
+                isPointer: false
+            ))
+        } else {
+            return .reference(.field(
+                target: irgen(lookup: target),
+                name: member,
+                isPointer: false
+            ))
+        }
     }
 }
 

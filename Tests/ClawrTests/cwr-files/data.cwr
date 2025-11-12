@@ -6,3 +6,6 @@ let x: Outie = {
         value: 1
     }
 }
+
+print x.value
+print x.innie.value
