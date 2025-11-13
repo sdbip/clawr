@@ -66,12 +66,7 @@ struct ObjectDeclarationTests {
 
     @Test
     func single_field() async throws {
-        let ast = try parse("""
-            object S {
-            data:
-                x: integer
-            }
-            """)
+        let ast = try parse("object S { data: x: integer }")
         #expect(ast == [.objectDeclaration(Object(
             name: "S",
             fields: [Variable(name: "x", semantics: .isolated, type: .builtin(.integer))],
@@ -152,12 +147,7 @@ struct ObjectDeclarationTests {
 
     @Test
     func mutating_method() async throws {
-        let source = """
-            object S {
-            mutating:
-                func method1() {}
-            }
-            """
+        let source = "object S { mutating: func method1() {} }"
         let ast = try parse(source)
         #expect(ast == [.objectDeclaration(Object(
             name: "S",
@@ -169,12 +159,7 @@ struct ObjectDeclarationTests {
 
     @Test
     func factory_methods() async throws {
-        let source = """
-            object S {
-            factory:
-                func new() => {}
-            }
-            """
+        let source = "object S { factory: func new() => {} }"
         let ast = try parse(source)
         #expect(ast == [.objectDeclaration(Object(
             name: "S",
@@ -186,12 +171,7 @@ struct ObjectDeclarationTests {
 
     @Test
     func static_fields() async throws {
-        let source = """
-            object LifeTheUniverseAndEverything {
-            static:
-                let answer = 42
-            }
-            """
+        let source = "object LifeTheUniverseAndEverything { static: let answer = 42 }"
         let ast = try parse(source)
         #expect(ast == [.objectDeclaration(Object(
             name: "LifeTheUniverseAndEverything",
@@ -234,11 +214,11 @@ struct ObjectDeclarationTests {
     func supertype() async throws {
         let source = """
             object Super {}
-            object S: Super {}
+            object Inheritor: Super {}
             """
         let ast = try parse(source)
         #expect(ast.last == .objectDeclaration(Object(
-            name: "S",
+            name: "Inheritor",
             isAbstract: false,
             supertype: .object(Object(name: "Super")),
         )))
