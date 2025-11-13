@@ -165,9 +165,16 @@ extension UnresolvedExpression {
             return .expression(try expression.resolve(in: scope, declaredType: nil))
         case .member(let target, member: let member, location: let location):
             let parent = try resolve(lookup: target, in: scope)
-            guard case .data(let data) = parent.type else { throw ParserError.unresolvedType(location) }
-            guard let field = data.fields.first(where: { $0.name == member }) else { throw ParserError.unknownVariable(member, location) }
-            return .member(parent, member: member, type: field.type)
+            switch parent.type {
+            case .data(let data):
+                guard let field = data.fields.first(where: { $0.name == member }) else { throw ParserError.unknownVariable(member, location) }
+                return .member(parent, member: member, type: field.type)
+            case .object(let object):
+                guard let field = object.fields.first(where: { $0.name == member }) else { throw ParserError.unknownVariable(member, location) }
+                return .member(parent, member: member, type: field.type)
+            default:
+                throw ParserError.unresolvedType(location)
+            }
         }
     }
 }
