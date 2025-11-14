@@ -2,7 +2,7 @@
 
 I’m unsure of the historical details, but [George Boole](https://en.wikipedia.org/wiki/George_Boole) is often credited as the father of binary logic. Aristotle is often mentioned as well, but the understanding of logic used in modern computers is called *Boolean Algebra*. And the simplest and most essential of all data types is the `boolean` in virtually all programming languages. (It may be spelled differently—`Boolean`, `bool`, `BOOL`, `Bool` etc—but all spellings hearken to George Boole’s name. In Clawr, the spelling is `boolean`.)
 
-Boole saw logic as binary. A `boolean` value can be either true ($1$) or false ($0$). Some have explored other forms of logic with more possible values. See the section on [Ternary Logic](./ternary-algebra.md) for more elaboration.
+Boole saw logic as binary. A `boolean` value can be either true ($1$) or false ($0$). Some have explored other forms of logic with more possible values. See the section on [[#Ternary Logic]] for more elaboration.
 
 Boolean values aren’t numbers, but there is a kind of arithmetic that applies to them. This is often referred to as *Boolean Algebra*. It consists of two binary operations: AND ($\times$) and OR ($+$), and one unary operation: NOT ($\neg$). The NOT operation negates the value of the operand: $\neg 1 = 0$ and $\neg 0 = 1$.
 
@@ -58,3 +58,17 @@ Another common Boolean operator is XOR (depicted with $\oplus$ in mathematics). 
 >
 > - `NOT (a OR b)` = `NOT a AND NOT b`
 > - `NOT (a AND b)` = `NOT a OR NOT b`
+
+## Ternary Logic
+
+Many have considered binary too limited. Even Aristotle considered statements of the future as neither definitively true nor definitively false. Many philosophers and mathematicians have since imagined multi-valued truth. Gödel went so far as to create a system that allows *infinite degrees* of truth between 0 (absolutely false) and 1 (absolutely true).
+
+The most obvious extension to Boolean binary is to add a single extra state, an indeterminate or “unknown” state.
+
+The three states can be defined in many ways and use multiple notations. First, we can imagine a ternary digit. Like a binary digit can have the value $0$ or $1$, which can be used in a positional system (base 2) to form any number; so can a ternary digit do the same in base 3. However, we now have a choice: we can use the numbers $0$, $1$ and $2$ which. feels natural and familiar, or we can use *balanced ternary*.
+
+In balanced ternary, a digit can have a value $-1$, $0$ or $+1$. This is of course not very intuitive, but it is much more efficient for computations. There are several notations for ternary digits: in mathematics and written text, the best notation is maybe `-`, `0`, `+`, for $-1$, $0$ and $+1$ respectively. Munis and plus are of course not very good for programming, though. That is why we need other notations. One that seems to be very popular is to use `0` and `1` as “normal,” but `T`for the “third state” ($-1$). Personally, I’ not convinced that considering $-1$ “the third state” is coherent. Why shouldn’t $0$ be that? Another suggestion is to use `D` (for $-1$ or “down”), `0` and `U` (for $+1$ or “up”).
+
+
+
+When working with ternary logic, we have many more possible combin

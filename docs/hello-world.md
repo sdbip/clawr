@@ -20,6 +20,8 @@ Let’s introduce the language in the time-honoured way of saying ”hello” to
 
 > [!info] How it Works
 > This simple line of code demonstrates a *function call*. We call the `print(_:)` function, a function with a single `string` *parameter*. A `string` is simply a sequence of characters to represent continuous text. When `print(_:)` is called, it outputs that text in the terminal where the program is running.
+>
+> The `(_:)` part of the name indicates that it has one unlabelled parameter. Unlike traditional languages, Clawr uses parameter labels. A function like `func goToX(_ x:, y:)` uses the *base name* `goToX` and a label (`y:`) to clarify which parameter has which role.   A function with no parameters is written with nothing between the parentheses: `()`.
 
 Here, we call the function with a single *argument*, the `string` value `"Hello, World!"`. We say that a function has (or takes or accepts) “parameters,” but when we call the function we say that we pass “arguments” to it. The arguments must match the parameters exactly, or we will see an error message from the compiler.
 
