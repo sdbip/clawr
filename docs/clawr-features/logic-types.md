@@ -1,6 +1,6 @@
 # Logic in Clawr
 
-![RAWR|150](rawr.png)
+![RAWR|150](../images/rawr.png)
 Clawr has two logic systems: *Boolean algebra* which is prevalent in most other languages, and *[ternary algebra](../logic/ternary-algebra.md)* which is built to accommodate future three-value hardware.
 
 ```clawr

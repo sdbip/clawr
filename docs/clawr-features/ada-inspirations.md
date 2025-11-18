@@ -1,6 +1,6 @@
 # Inspirations from Ada
 
-![RAWR|150](rawr.png)
+![RAWR|150](../images/rawr.png)
 Ada is named for Ada Lovelace, the assistant to Charles Babbage in the design of the [Analytical Engine](https://en.wikipedia.org/wiki/Analytical_engine).
 
 > She was the first to recognise that the machine had applications beyond pure calculation. Ada Lovelace is often considered to be the first computer programmer.

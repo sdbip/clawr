@@ -1,6 +1,6 @@
 # Aspirations and Ideas
 
-![RAWR|150](rawr.png)
+![RAWR|150](../images/rawr.png)
 The documents in this folder should be seen as aspirational. The features are not yet implemented, but ideas for what the language should be and how it should work
 
 Hopefully all, but certainly some, of these ideas will be feasible and should be implemented in some form. But do not expect everything in here to be realised in the compiler tomorrow. Many of these ideas probably need further refinement with regards to both syntax and semantics. And perhaps even their conceptual metaphors.
