@@ -24,8 +24,8 @@ extension UnresolvedStatement {
 
         case .functionCall(let call):
             let resolvedName = call.resolvedName
-            guard let function = scope.function(forName: resolvedName) else { throw ParserError.unknownFunction(resolvedName, call.target.location) }
-            return try .functionCall(call.target.value, arguments: call.arguments.enumerated().map {
+            guard let function = scope.function(forName: resolvedName) else { throw ParserError.unknownFunction(resolvedName, call.function.location) }
+            return try .functionCall(call.function.value, arguments: call.arguments.enumerated().map {
                 let parameter = function.parameters[$0.offset]
                 return try $0.element.map { try $0.resolve(in: scope, declaredType: parameter.value.type.name) }
             })

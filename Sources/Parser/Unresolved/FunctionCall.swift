@@ -1,12 +1,12 @@
 import Lexer
 
 struct FunctionCall {
-    var target: Located<String>
+    var function: Located<String>
     var arguments: [Labeled<UnresolvedExpression>]
     var returnType: Located<String>?
 
     var resolvedName: String {
-        Function.resolvedName(base: target.value, labels: arguments.map { $0.label })
+        Function.resolvedName(base: function.value, labels: arguments.map { $0.label })
     }
 }
 
@@ -44,6 +44,6 @@ extension FunctionCall: StatementParseable {
             }
         }
         _ = try stream.next().requiring { $0.value == ")" }
-        self.init(target: (name, location: nameToken.location), arguments: arguments)
+        self.init(function: (name, location: nameToken.location), arguments: arguments)
     }
 }

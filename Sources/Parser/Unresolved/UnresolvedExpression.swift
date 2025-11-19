@@ -21,11 +21,11 @@ extension UnresolvedExpression {
         case .bitfield(_, let l): return l
         case .real(_, let l): return l
         case .dataStructureLiteral(_, let l): return l
-        case .memberLookup(_, member: _, location: let l): return l
+        case .memberLookup(_, _, location: let l): return l
         case .identifier(_, let l): return l
         case .unaryOperation(_, _, location: let l): return l
         case .binaryOperation(_, _, _, location: let l): return l
-        case .functionCall(let call): return call.target.location
+        case .functionCall(let call): return call.function.location
         }
     }
     static func parse(stream: TokenStream) throws -> UnresolvedExpression {
@@ -126,10 +126,10 @@ extension UnresolvedExpression {
             return .identifier(v, type: variable.type)
         case .functionCall(let call):
             let resolvedName = call.resolvedName
-            guard let function = scope.function(forName: resolvedName) else { throw ParserError.unknownFunction(resolvedName, call.target.location) }
-            guard let returnType = scope.resolve(typeNamed: call.returnType) else { throw ParserError.unresolvedType(call.returnType?.location ?? call.target.location)}
+            guard let function = scope.function(forName: resolvedName) else { throw ParserError.unknownFunction(resolvedName, call.function.location) }
+            guard let returnType = scope.resolve(typeNamed: call.returnType) else { throw ParserError.unresolvedType(call.returnType?.location ?? call.function.location)}
             return try .functionCall(
-                call.target.value,
+                call.function.value,
                 arguments: call.arguments.enumerated().map {
                     let parameter = function.parameters[$0.offset]
                     return try $0.element.map { try $0.resolve(in: scope, declaredType: parameter.value.type.name) }

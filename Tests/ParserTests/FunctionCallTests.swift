@@ -35,8 +35,8 @@ struct FunctionCallTests {
         _ = try FunctionCall.init(parsing: stream)
     }
 
-    @Test("Resolves")
-    func resolves() async throws {
+    @Test("Resolves top-level function")
+    func resolves_toplevel() async throws {
         let source = """
             func f() {}
             f()
