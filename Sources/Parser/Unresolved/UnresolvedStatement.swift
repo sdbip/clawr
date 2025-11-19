@@ -15,7 +15,7 @@ extension UnresolvedStatement {
         case .variableDeclaration(let decl):
             let variable = try decl.resolveVariable(in: scope)
             scope.register(variable: variable)
-            return try .variableDeclaration(variable, initializer: decl.initializer?.resolve(in: scope, declaredType: decl.type?.value))
+            return .variableDeclaration(variable)
 
         case .functionDeclaration(let decl):
             let function = try decl.resolveFunction(in: scope)

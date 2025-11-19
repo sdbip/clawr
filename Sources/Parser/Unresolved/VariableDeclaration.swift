@@ -53,10 +53,13 @@ extension VariableDeclaration: StatementParseable {
 
     func resolveVariable(in scope: Scope) throws -> Variable {
         guard let type = try scope.resolveType(name: type, initializer: initializer) else { throw ParserError.unresolvedType(name.location) }
+        let initializer = try initializer?.resolve(in: scope, declaredType: self.type?.value)
+        guard self.initializer == nil || initializer != nil else { throw ParserError.unresolvedType(name.location) }
         return Variable(
             name: name.value,
             semantics: semantics.value,
-            type: type
+            type: type,
+            initialValue: initializer
         )
     }
 }

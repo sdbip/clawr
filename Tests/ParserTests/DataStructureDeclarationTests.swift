@@ -41,7 +41,8 @@ struct DataStructureDeclarationTests {
             fields: [Variable(
                 name: "x",
                 semantics: .isolated,
-                type: .builtin(.integer)
+                type: .builtin(.integer),
+                initialValue: nil
             )]
         ))])
     }
@@ -52,8 +53,8 @@ struct DataStructureDeclarationTests {
         #expect(ast == [.dataStructureDeclaration(DataStructure(
             name: "S",
             fields: [
-                Variable(name: "x", semantics: .isolated, type: .builtin(.integer)),
-                Variable(name: "y", semantics: .isolated, type: .builtin(.bitfield)),
+                Variable(name: "x", semantics: .isolated, type: .builtin(.integer), initialValue: nil),
+                Variable(name: "y", semantics: .isolated, type: .builtin(.bitfield), initialValue: nil),
             ]
         ))])
     }
@@ -145,7 +146,7 @@ struct DataStructureDeclarationTests {
             name: "S",
             fields: [],
             companion: CompanionObject(name: "S.static", fields: [
-                Variable(name: "x", semantics: .immutable, type: .builtin(.integer)),
+                Variable(name: "x", semantics: .immutable, type: .builtin(.integer), initialValue: .integer(43)),
             ])
         ))])
     }
@@ -157,8 +158,8 @@ struct DataStructureDeclarationTests {
             let a = S.answer
             """
         let ast = try parse(source)
-        guard case .variableDeclaration(let variable, initializer: let initializer) = ast.last else { Issue.record("Expected a variable declaration from \(ast)"); return }
-        guard case .memberLookup(.member(.expression(.identifier(let identifier, type: let identifierType)), member: let member, _)) = initializer else { Issue.record("Expected member-lookup from \(initializer)"); return }
+        guard case .variableDeclaration(let variable) = ast.last else { Issue.record("Expected a variable declaration from \(ast)"); return }
+        guard case .memberLookup(.member(.expression(.identifier(let identifier, type: let identifierType)), member: let member, _)) = variable.initialValue else { Issue.record("Expected member-lookup from \(variable.initialValue)"); return }
         guard case .companionObject(let data) = identifierType else { Issue.record("Expected companion-object reference, was: \(identifierType)"); return }
         #expect(variable.type == .builtin(.integer))
         #expect(identifier == "S")

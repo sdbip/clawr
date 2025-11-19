@@ -13,15 +13,15 @@ struct DataStructureFieldTests {
             let y = x.value
             """
         let yAssignment = try parse(source).last
-        guard case  .variableDeclaration(_, initializer: let initializer) = yAssignment else {
+        guard case  .variableDeclaration(let decl) = yAssignment else {
             Issue.record("Expected variable declaration: \(yAssignment)")
             return
         }
-        #expect(initializer == .memberLookup(.member(
+        #expect(decl.initialValue == .memberLookup(.member(
             .expression(.identifier(
                 "x",
                 type: .data(.init(name: "X", fields: [
-                    Variable(name: "value", semantics: .isolated, type: .builtin(.integer))
+                    Variable(name: "value", semantics: .isolated, type: .builtin(.integer), initialValue: nil)
                 ]))
             )),
             member: "value",
@@ -31,8 +31,8 @@ struct DataStructureFieldTests {
 
     @Test("Lookup inner")
     func inner_reference() async throws {
-        let innie = DataStructure(name: "Innie", fields: [Variable(name: "value", semantics: .isolated, type: .builtin(.integer))])
-        let outie = DataStructure(name: "Outie", fields: [Variable(name: "innie", semantics: .isolated, type: .data(innie))])
+        let innie = DataStructure(name: "Innie", fields: [Variable(name: "value", semantics: .isolated, type: .builtin(.integer), initialValue: nil)])
+        let outie = DataStructure(name: "Outie", fields: [Variable(name: "innie", semantics: .isolated, type: .data(innie), initialValue: nil)])
 
         let source = """
             data Innie { value: integer }
@@ -41,11 +41,11 @@ struct DataStructureFieldTests {
             let y = x.innie.value
             """
         let yAssignment = try parse(source).last
-        guard case  .variableDeclaration(_, initializer: let initializer) = yAssignment else {
+        guard case  .variableDeclaration(let decl) = yAssignment else {
             Issue.record("Expected variable declaration: \(yAssignment)")
             return
         }
-        #expect(initializer == .memberLookup(
+        #expect(decl.initialValue == .memberLookup(
             .member(
                 .expression(.memberLookup(.member(
                     .expression(.identifier("x", type: .data(outie))),

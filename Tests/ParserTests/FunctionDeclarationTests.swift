@@ -161,12 +161,11 @@ struct FunctionDeclarationTests {
             returnType: nil,
             parameters: [],
             body: [
-                .variableDeclaration(
-                    Variable(
-                        name: "x",
-                        semantics: .immutable,
-                        type: .builtin(.integer)),
-                    initializer: .integer(1)
+                .variableDeclaration(Variable(
+                    name: "x",
+                    semantics: .immutable,
+                    type: .builtin(.integer),
+                    initialValue: .integer(1))
                 )
             ]
         ))])

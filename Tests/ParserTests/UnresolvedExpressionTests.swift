@@ -51,39 +51,39 @@ struct UnresolvedExpressionTests {
     func addition() async throws {
         let source = "let x = 1 + 2"
         let ast = try parse(source)
-        guard case .variableDeclaration(_, initializer: let expr) = ast.first else { Issue.record("Unexpected expression: \(ast)"); return }
-        #expect(expr == .binaryOperation(left: .integer(1), operator: .addition, right: .integer(2)))
+        guard case .variableDeclaration(let decl) = ast.first else { Issue.record("Unexpected expression: \(ast)"); return }
+        #expect(decl.initialValue == .binaryOperation(left: .integer(1), operator: .addition, right: .integer(2)))
     }
 
     @Test("Multiplication")
     func multiplication() async throws {
         let source = "let x = 2 * 3"
         let ast = try parse(source)
-        guard case .variableDeclaration(_, initializer: let expr) = ast.first else { Issue.record("Unexpected expression: \(ast)"); return }
-        #expect(expr == .binaryOperation(left: .integer(2), operator: .multiplication, right: .integer(3)))
+        guard case .variableDeclaration(let decl) = ast.first else { Issue.record("Unexpected expression: \(ast)"); return }
+        #expect(decl.initialValue == .binaryOperation(left: .integer(2), operator: .multiplication, right: .integer(3)))
     }
 
     @Test("Multiple operators are evaluated left-to-right")
     func multiple_additions() async throws {
         let source = "let x = 1 + 2 - 3"
         let ast = try parse(source)
-        guard case .variableDeclaration(_, initializer: let expr) = ast.first else { Issue.record("Unexpected expression: \(ast)"); return }
-        #expect(expr == .binaryOperation(left: .binaryOperation(left: .integer(1), operator: .addition, right: .integer(2)), operator: .subtraction, right: .integer(3)))
+        guard case .variableDeclaration(let decl) = ast.first else { Issue.record("Unexpected expression: \(ast)"); return }
+        #expect(decl.initialValue == .binaryOperation(left: .binaryOperation(left: .integer(1), operator: .addition, right: .integer(2)), operator: .subtraction, right: .integer(3)))
     }
 
     @Test("Addition has lower precedence than multiplication")
     func precedence() async throws {
         let source = "let x = 1 + 2 * 3"
         let ast = try parse(source)
-        guard case .variableDeclaration(_, initializer: let expr) = ast.first else { Issue.record("Unexpected expression: \(ast)"); return }
-        #expect(expr == .binaryOperation(left: .integer(1), operator: .addition, right: .binaryOperation(left: .integer(2), operator: .multiplication, right: .integer(3))))
+        guard case .variableDeclaration(let decl) = ast.first else { Issue.record("Unexpected expression: \(ast)"); return }
+        #expect(decl.initialValue == .binaryOperation(left: .integer(1), operator: .addition, right: .binaryOperation(left: .integer(2), operator: .multiplication, right: .integer(3))))
     }
 
     @Test("Precedence can be overridden using paretheses")
     func parentheses() async throws {
         let source = "let x = (1 + 2) * 3"
         let ast = try parse(source)
-        guard case .variableDeclaration(_, initializer: let expr) = ast.first else { Issue.record("Unexpected expression: \(ast)"); return }
-        #expect(expr == .binaryOperation(left: .binaryOperation(left: .integer(1), operator: .addition, right: .integer(2)), operator: .multiplication, right: .integer(3)))
+        guard case .variableDeclaration(let decl) = ast.first else { Issue.record("Unexpected expression: \(ast)"); return }
+        #expect(decl.initialValue == .binaryOperation(left: .binaryOperation(left: .integer(1), operator: .addition, right: .integer(2)), operator: .multiplication, right: .integer(3)))
     }
 }

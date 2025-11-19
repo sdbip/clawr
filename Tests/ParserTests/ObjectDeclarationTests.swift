@@ -192,7 +192,7 @@ struct ObjectDeclarationTests {
         let source = "object LifeTheUniverseAndEverything { static: let answer = 42 }"
         let ast = try parse(source)
         guard case .objectDeclaration(let object) = ast.first else { Issue.record("Expected an object from \(ast)"); return }
-        #expect(object.companion?.fields == [Variable(name: "answer", semantics: .immutable, type: .builtin(.integer))])
+        #expect(object.companion?.fields == [Variable(name: "answer", semantics: .immutable, type: .builtin(.integer), initialValue: .integer(42))])
     }
 
     @Test
@@ -242,7 +242,7 @@ struct ObjectDeclarationTests {
                 "S",
                 type: .companionObject(CompanionObject(
                     name: "S.static",
-                    fields: [Variable(name: "answer", semantics: .immutable, type: .builtin(.integer))]
+                    fields: [Variable(name: "answer", semantics: .immutable, type: .builtin(.integer), initialValue: .integer(42))]
                 ))
             )),
             member: "answer",

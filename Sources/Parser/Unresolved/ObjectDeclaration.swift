@@ -148,15 +148,15 @@ extension ObjectDeclaration: StatementParseable {
 
         if let staticSection {
             let companionObject = CompanionObject(name: "\(name.value).static")
-            companionObject.fields = try staticSection.fields.map { try $0.resolveVariable(in: scope) }
-            scope.register(type: companionObject)
-            scope.register(variable: Variable(name: name.value, semantics: .immutable, type: .companionObject(companionObject)))
-
-            companionObject.methods = try staticSection.methods.map { try $0.resolveFunction(in: scope) }
             result.companion = companionObject
+            scope.register(type: companionObject)
+            scope.register(variable: Variable(name: name.value, semantics: .immutable, type: .companionObject(companionObject), initialValue: nil))
+
+            companionObject.fields = try staticSection.fields.map { try $0.resolveVariable(in: scope) }
+            companionObject.methods = try staticSection.methods.map { try $0.resolveFunction(in: scope) }
         }
 
-        let objectScope = Scope(parent: scope, parameters: [Variable(name: "self", semantics: .immutable, type: .object(result))])
+        let objectScope = Scope(parent: scope, parameters: [Variable(name: "self", semantics: .immutable, type: .object(result), initialValue: nil)])
         objectScope.register(type: result)
 
         result.methods = try mutatingMethods.map { try $0.resolveFunction(in: objectScope) }

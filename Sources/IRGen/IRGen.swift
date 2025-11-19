@@ -30,9 +30,9 @@ public func irgen(statements: [Parser.Statement]) -> [Codegen.Statement] {
     var result: [Codegen.Statement] = []
     for statement in statements {
         switch statement {
-        case .variableDeclaration(let variable, initializer: let initializer):
-            result.append(.variable(variable.name, type: variable.type.irName, initializer: initializer.map(irgen(expression:)) ?? .literal("NULL")))
-            if let initializer {
+        case .variableDeclaration(let variable):
+            result.append(.variable(variable.name, type: variable.type.irName, initializer: variable.initialValue.map(irgen(expression:)) ?? .literal("NULL")))
+            if let initializer = variable.initialValue {
                 let assignments = irgen(assigned: initializer, to: .name(variable.name))
                 result.append(contentsOf: assignments)
             }

@@ -70,12 +70,12 @@ extension DataStructureDeclaration: StatementParseable {
 
         if let staticSection {
             let companionObject = CompanionObject(name: "\(name.value).static")
-            companionObject.fields = try staticSection.fields.map { try $0.resolveVariable(in: scope) }
-            scope.register(type: companionObject)
-            scope.register(variable: Variable(name: name.value, semantics: .immutable, type: .companionObject(companionObject)))
-
-            companionObject.methods = try staticSection.methods.map { try $0.resolveFunction(in: scope) }
             result.companion = companionObject
+            scope.register(type: companionObject)
+            scope.register(variable: Variable(name: name.value, semantics: .immutable, type: .companionObject(companionObject), initialValue: nil))
+
+            companionObject.fields = try staticSection.fields.map { try $0.resolveVariable(in: scope) }
+            companionObject.methods = try staticSection.methods.map { try $0.resolveFunction(in: scope) }
         }
 
         return result
