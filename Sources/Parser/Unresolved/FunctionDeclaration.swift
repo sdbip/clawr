@@ -24,7 +24,7 @@ extension FunctionDeclaration: StatementParseable {
     }
 
     init(parsing stream: TokenStream) throws {
-        _ = try stream.next().requiring { $0.value == "func" }
+        let keywordToken = try stream.next().requiring { $0.value == "func" || $0.value == "pure" }
 
         let nameToken = try stream.next().requiring { $0.kind == .identifier }
         _ = try stream.next().requiring { $0.value == "(" }
@@ -59,7 +59,7 @@ extension FunctionDeclaration: StatementParseable {
             _ = try stream.next().requiring { $0.value == "}" }
         }
 
-        self.init(name: (nameToken.value, nameToken.location), isPure: false, parameters: parameters, body: body, returnType: returnType)
+        self.init(name: (nameToken.value, nameToken.location), isPure: keywordToken.value == "pure", parameters: parameters, body: body, returnType: returnType)
     }
 
     func resolveFunction(in scope: Scope) throws -> Function {

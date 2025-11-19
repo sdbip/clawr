@@ -5,7 +5,7 @@ import Lexer
 @Suite("Function Declarations")
 struct FunctionDeclarationTests {
     @Test("Incomplete declarations",
-        arguments: ["func", "func f", "func f(", "func f() {", "func f() ->", "func f() =>"]
+        arguments: ["func", "func f", "func f(", "func f() {", "func f() ->", "func f() =>", "pure", "pure f", "pure f(", "pure f() {", "pure f() ->", "pure f() =>"]
     )
     func unexpected_end(_ source: String) async throws {
         let error = try #require(throws: ParserError.self) { try parse(source) }
@@ -16,7 +16,7 @@ struct FunctionDeclarationTests {
     }
 
     @Test("Invalid tokens",
-        arguments: ["func 12()", "func f 1)", "func f(1"]
+        arguments: ["func 12()", "func f 1)", "func f(1", "pure 12()", "pure f 1)", "pure f(1"]
     )
     func invalid_token(_ source: String) async throws {
         let error = try #require(throws: ParserError.self) { try parse(source)}
@@ -37,6 +37,7 @@ struct FunctionDeclarationTests {
             body: []
         ))])
     }
+
     @Test("Declared return type")
     func return_type() async throws {
         let ast = try parse("func f() -> integer {}")
@@ -46,6 +47,18 @@ struct FunctionDeclarationTests {
             returnType: .builtin(.integer),
             parameters: [],
             body: []
+        ))])
+    }
+
+    @Test("Pure function")
+    func pure() async throws {
+        let ast = try parse("pure f() => 32")
+        #expect(ast == [.functionDeclaration(Function(
+            name: "f",
+            isPure: true,
+            returnType: .builtin(.integer),
+            parameters: [],
+            body: [.returnStatement(.integer(32))]
         ))])
     }
 
