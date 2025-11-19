@@ -61,7 +61,7 @@ extension DataStructureDeclaration: StatementParseable {
             fields: try fields.map { try $0.resolveVariable(in: scope) },
             companion: try staticSection.map {
                 try CompanionObject(
-                    name: "\(name.value).static",
+                    name: "\(name.value)_static",
                     fields: $0.fields.map { try $0.resolveVariable(in: scope) },
                     methods: $0.methods.map { try $0.resolveFunction(in: scope) },
                 )
@@ -69,7 +69,12 @@ extension DataStructureDeclaration: StatementParseable {
         )
 
         if let staticSection {
-            let companionObject = CompanionObject(name: "\(name.value).static")
+            let companionObject = CompanionObject(name: "\(name.value)_static")
+            companionObject.fields = try staticSection.fields.map { try $0.resolveVariable(in: scope) }
+            scope.register(type: companionObject)
+            scope.register(variable: Variable(name: name.value, semantics: .immutable, type: .companionObject(companionObject)))
+
+            companionObject.methods = try staticSection.methods.map { try $0.resolveFunction(in: scope) }
             result.companion = companionObject
             scope.register(type: companionObject)
             scope.register(variable: Variable(name: name.value, semantics: .immutable, type: .companionObject(companionObject), initialValue: nil))

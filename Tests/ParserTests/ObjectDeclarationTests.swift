@@ -241,7 +241,7 @@ struct ObjectDeclarationTests {
             .expression(.identifier(
                 "S",
                 type: .companionObject(CompanionObject(
-                    name: "S.static",
+                    name: "S_static",
                     fields: [Variable(name: "answer", semantics: .immutable, type: .builtin(.integer), initialValue: .integer(42))]
                 ))
             )),

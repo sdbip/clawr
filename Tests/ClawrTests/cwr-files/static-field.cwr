@@ -1,0 +1,12 @@
+object O {
+static:
+  let answer = 42
+}
+
+data S {
+static:
+  let answer = 47
+}
+
+print O.answer
+print S.answer

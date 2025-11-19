@@ -145,7 +145,7 @@ struct DataStructureDeclarationTests {
         #expect(ast == [.dataStructureDeclaration(DataStructure(
             name: "S",
             fields: [],
-            companion: CompanionObject(name: "S.static", fields: [
+            companion: CompanionObject(name: "S_static", fields: [
                 Variable(name: "x", semantics: .immutable, type: .builtin(.integer), initialValue: .integer(43)),
             ])
         ))])
@@ -163,7 +163,7 @@ struct DataStructureDeclarationTests {
         guard case .companionObject(let data) = identifierType else { Issue.record("Expected companion-object reference, was: \(identifierType)"); return }
         #expect(variable.type == .builtin(.integer))
         #expect(identifier == "S")
-        #expect(data.name == "S.static")
+        #expect(data.name == "S_static")
         #expect(member == "answer")
     }
 }

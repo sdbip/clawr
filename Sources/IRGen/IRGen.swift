@@ -37,6 +37,22 @@ public func irgen(statements: [Parser.Statement]) -> [Codegen.Statement] {
                 result.append(contentsOf: assignments)
             }
         case .objectDeclaration(let object):
+            if let companion = object.companion {
+                result.append(.structDeclaration(
+                    "__\(object.name)_static",
+                    fields: companion.fields.map {
+                        Field(type: .simple($0.type.irName), name: $0.name)
+                    }
+                ))
+                result.append(.variable(
+                    companion.name,
+                    type: "__\(object.name)_static",
+                    initializer: .structInitializer(companion.fields.map {
+                        NamedValue(name: $0.name, value: irgen(expression: $0.initialValue ?? .integer(0)))
+                    })
+                ))
+            }
+
             result.append(.structDeclaration(
                 "__\(object.name)_data",
                 fields: object.fields.map {
@@ -65,6 +81,22 @@ public func irgen(statements: [Parser.Statement]) -> [Codegen.Statement] {
                 ])
             ))
         case .dataStructureDeclaration(let dataStructure):
+            if let companion = dataStructure.companion {
+                result.append(.structDeclaration(
+                    "__\(dataStructure.name)_static",
+                    fields: companion.fields.map {
+                        Field(type: .simple($0.type.irName), name: $0.name)
+                    }
+                ))
+                result.append(.variable(
+                    companion.name,
+                    type: "__\(dataStructure.name)_static",
+                    initializer: .structInitializer(companion.fields.map {
+                        NamedValue(name: $0.name, value: irgen(expression: $0.initialValue ?? .integer(0)))
+                    })
+                ))
+            }
+
             result.append(.structDeclaration(
                 "__\(dataStructure.name)_data",
                 fields: dataStructure.fields.map {
@@ -140,18 +172,23 @@ func irgen(assigned expression: Parser.Expression, to target: Reference) -> [Cod
 
 func irgen(expression: Parser.Expression) -> Codegen.Expression {
     switch expression {
-    case .boolean(let b): .literal(b ? "1" : "0")
-    case .integer(let i): .literal("\(i)")
-    case .real(let r): .literal("\(r)")
-    case .bitfield(let b): .literal("0x\(String(b, radix: 16))")
-    case .identifier(let identifier, type: _): .reference(.name(identifier))
-    case .memberLookup(let target): irgen(lookup: target)
+    case .boolean(let b): return .literal(b ? "1" : "0")
+    case .integer(let i): return .literal("\(i)")
+    case .real(let r): return .literal("\(r)")
+    case .bitfield(let b): return .literal("0x\(String(b, radix: 16))")
+    case .identifier(let identifier, type: let type):
+        if case .companionObject(_) = type {
+            return .reference(.name("\(identifier)_static"))
+        } else {
+            return .reference(.name(identifier))
+        }
+    case .memberLookup(let target): return irgen(lookup: target)
     case .functionCall(let target, arguments: let arguments, type: let type): fatalError("Function call not yet implemented")
     case .dataStructureLiteral(let type, fieldValues: _):
-        .call(.name("allocRC"), arguments: [.reference(.name("__\(type.name)_info")), .reference(.name("__clawr_ISOLATED"))])
+        return .call(.name("allocRC"), arguments: [.reference(.name("__\(type.name)_info")), .reference(.name("__clawr_ISOLATED"))])
     case .unaryOperation(operator: let op, expression: let expression): fatalError("Operators not yet implemented")
     case .binaryOperation(left: let left, operator: .leftShift, right: let right):
-        .call(.name("leftShift"), arguments: [irgen(expression: left), irgen(expression: right)])
+        return .call(.name("leftShift"), arguments: [irgen(expression: left), irgen(expression: right)])
     case .binaryOperation(left: let left, operator: let op, right: let right): fatalError("Operators not yet implemented")
     }
 }
@@ -196,7 +233,7 @@ extension ResolvedType {
         case .builtin(_): false
         case .data(_): true
         case .object(_): true
-        case .companionObject(_): fatalError("Cannot look up a companion object")
+        case .companionObject(_): false
         }
     }
 
