@@ -51,8 +51,6 @@ struct ObjectDeclarationTests {
             pureMethods: [],
             mutatingMethods: [],
             fields: [],
-            staticMethods: [],
-            staticFields: [],
         ))])
     }
 
@@ -195,10 +193,8 @@ struct ObjectDeclarationTests {
     func static_fields() async throws {
         let source = "object LifeTheUniverseAndEverything { static: let answer = 42 }"
         let ast = try parse(source)
-        #expect(ast == [.objectDeclaration(Object(
-            name: "LifeTheUniverseAndEverything",
-            staticFields: [Variable(name: "answer", semantics: .immutable, type: .builtin(.integer))],
-        ))])
+        guard case .objectDeclaration(let object) = ast.first else { Issue.record("Expected an object from \(ast)"); return }
+        #expect(object.companion?.fields == [Variable(name: "answer", semantics: .immutable, type: .builtin(.integer))])
     }
 
     @Test
@@ -212,7 +208,7 @@ struct ObjectDeclarationTests {
             """
         let ast = try parse(source)
         guard case .objectDeclaration(let object) = ast.first else { Issue.record("Expected an object from \(ast)"); return }
-        guard case .returnStatement(let stmt) = object.staticMethods.first?.body.first else { Issue.record("Expected an return statement in \(object.staticMethods.first)"); return }
+        guard case .returnStatement(let stmt) = object.companion?.methods.first?.body.first else { Issue.record("Expected an return statement in \(object.companion?.methods.first)"); return }
         #expect(stmt == .memberLookup(.member(
             .expression(.identifier(
                 "S",
@@ -225,11 +221,11 @@ struct ObjectDeclarationTests {
             type: .builtin(.integer)
         )))
 
-        #expect(object.staticMethods.count == 1)
-        #expect(object.staticMethods.first?.name == "method")
-        #expect(object.staticMethods.first?.returnType == .builtin(.integer))
-        #expect(object.staticMethods.first?.body.count == 1)
-        #expect(object.staticMethods.first?.parameters.count == 0)
+        #expect(object.companion?.methods.count == 1)
+        #expect(object.companion?.methods.first?.name == "method")
+        #expect(object.companion?.methods.first?.returnType == .builtin(.integer))
+        #expect(object.companion?.methods.first?.body.count == 1)
+        #expect(object.companion?.methods.first?.parameters.count == 0)
     }
 
     @Test

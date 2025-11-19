@@ -8,8 +8,7 @@ struct ObjectDeclaration {
     var mutatingMethods: [FunctionDeclaration] = []
     var fields: [VariableDeclaration] = []
     var factoryMethods: [FunctionDeclaration] = []
-    var staticMethods: [FunctionDeclaration] = []
-    var staticFields: [VariableDeclaration] = []
+    var staticSection: StaticSection?
 }
 
 extension ObjectDeclaration: StatementParseable {
@@ -46,9 +45,8 @@ extension ObjectDeclaration: StatementParseable {
         var pureMethods: [FunctionDeclaration] = []
         var mutatingMethods: [FunctionDeclaration]? = nil
         var factoryMethods: [FunctionDeclaration]? = nil
-        var staticMethods: [FunctionDeclaration]? = nil
-        var staticFields: [VariableDeclaration]? = nil
         var dataFields: [VariableDeclaration]? = nil
+        var staticSection: StaticSection?
 
         _ = try stream.next().requiring { $0.value == "{" }
 
@@ -88,7 +86,7 @@ extension ObjectDeclaration: StatementParseable {
             }
 
             if t.value == "static" {
-                if staticFields != nil { throw ParserError.invalidToken(t) }
+                if staticSection != nil { throw ParserError.invalidToken(t) }
                 _ = stream.next()
                 _ = try stream.next().requiring { $0.value == ":" }
 
@@ -104,8 +102,7 @@ extension ObjectDeclaration: StatementParseable {
                     }
                 }
 
-                staticFields = fields
-                staticMethods = methods
+                staticSection = StaticSection(fields: fields, methods: methods)
             }
 
             if t.value == "data" {
@@ -137,15 +134,14 @@ extension ObjectDeclaration: StatementParseable {
             mutatingMethods: mutatingMethods ?? [],
             fields: dataFields ?? [],
             factoryMethods: factoryMethods ?? [],
-            staticMethods: staticMethods ?? [],
-            staticFields: staticFields ?? [],
+            staticSection: staticSection,
         )
     }
 
     func resolveObject(in scope: Scope) throws -> Object {
 
         var companionObject = CompanionObject(name: "\(name.value).static")
-        companionObject.fields = try staticFields.map { try $0.resolveVariable(in: scope) }
+        companionObject.fields = try (staticSection?.fields ?? []).map { try $0.resolveVariable(in: scope) }
         scope.register(type: companionObject)
         scope.register(variable: Variable(name: name.value, semantics: .immutable, type: .companionObject(companionObject)))
 
@@ -159,8 +155,10 @@ extension ObjectDeclaration: StatementParseable {
         result.mutatingMethods = try mutatingMethods.map { try $0.resolveFunction(in: objectScope) }
         result.factoryMethods = try factoryMethods.map { try $0.resolveFunction(in: objectScope) }
 
-        result.staticFields = try staticFields.map { try $0.resolveVariable(in: scope) }
-        result.staticMethods = try staticMethods.map { try $0.resolveFunction(in: scope) }
+        companionObject.methods = try (staticSection?.methods ?? []).map { try $0.resolveFunction(in: scope) }
+        if companionObject.fields.count > 0 || companionObject.methods.count > 0 {
+            result.companion = companionObject
+        }
 
         return result
     }

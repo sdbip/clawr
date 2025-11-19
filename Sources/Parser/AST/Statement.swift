@@ -87,8 +87,7 @@ public struct Object: Equatable {
     public var mutatingMethods: [Function]
     public var fields: [Variable]
     public var factoryMethods: [Function]
-    public var staticMethods: [Function]
-    public var staticFields: [Variable]
+    public var companion: CompanionObject?
 
     public init(
             name: String,
@@ -98,8 +97,7 @@ public struct Object: Equatable {
             mutatingMethods: [Function] = [],
             fields: [Variable] = [],
             factoryMethods: [Function] = [],
-            staticMethods: [Function] = [],
-            staticFields: [Variable] = [],
+            companion: CompanionObject? = nil,
             ) {
         self.name = name
         self.isAbstract = isAbstract
@@ -108,8 +106,7 @@ public struct Object: Equatable {
         self.mutatingMethods = mutatingMethods
         self.fields = fields
         self.factoryMethods = factoryMethods
-        self.staticMethods = staticMethods
-        self.staticFields = staticFields
+        self.companion = companion
     }
 }
 
