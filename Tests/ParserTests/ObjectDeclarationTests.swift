@@ -109,7 +109,7 @@ struct ObjectDeclarationTests {
 
     @Test
     func single_method() async throws {
-        let source = "object S { func method() => 42 }"
+        let source = "object S { pure method() => 42 }"
         let ast = try parse(source)
         #expect(ast == [.objectDeclaration(Object(
             name: "S",
@@ -121,8 +121,8 @@ struct ObjectDeclarationTests {
     func multiple_methods() async throws {
         let source = """
             object S {
-                func method1() => 42
-                func method2() => 43
+                pure method1() => 42
+                pure method2() => 43
             }
             """
         let ast = try parse(source)
@@ -139,7 +139,7 @@ struct ObjectDeclarationTests {
     func field_lookup() async throws {
         let source = """
             object S {
-                func method() => self.answer
+                pure method() => self.answer
             data:
                 let answer = 42
             }
@@ -229,7 +229,7 @@ struct ObjectDeclarationTests {
     func static_field_lookup_from_instance_scope() async throws {
         let source = """
             object S {
-                func method() => S.answer
+                pure method() => S.answer
             static:
                 let answer = 42
             }

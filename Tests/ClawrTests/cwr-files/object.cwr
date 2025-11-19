@@ -1,13 +1,13 @@
 object O {
-    func value() => self.value
+    pure value() => self.value
 
 data:
     value: integer
 
 factory:
-    func new() => { value: 42 }
+    pure new() => { value: 42 }
 }
 
 // let o = O.new()
-// print o.value
+// print o.value()
 print 42

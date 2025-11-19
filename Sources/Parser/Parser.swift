@@ -38,4 +38,5 @@ public enum ParserError: Error {
     case unknownVariable(String, FileLocation)
     case unknownFunction(String, FileLocation)
     case typeMismatch(declared: String, inferred: String, location: FileLocation)
+    case impureMethods([(name: String, location: FileLocation)])
 }

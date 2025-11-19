@@ -44,6 +44,10 @@ do {
         fputs("\(inputFile.lastPathComponent):\(location.line):\(location.column):Unknown variable: \(name)\n", stderr)
     case .unknownFunction(let name, let location):
         fputs("\(inputFile.lastPathComponent):\(location.line):\(location.column):Unknown function: \(name)\n", stderr)
+    case .impureMethods(let methods):
+        for method in methods {
+            fputs("\(inputFile.lastPathComponent):\(method.location.line):\(method.location.column):Method \(method.name) is impure\n", stderr)
+        }
 }
     exit(2)
 }

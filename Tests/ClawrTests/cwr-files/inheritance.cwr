@@ -1,23 +1,23 @@
 object abstract Super {
 
-    func value() => self.value
+    pure value() => self.value
 
 data:
     value: integer
 
 factory:
-    func new(value: integer) => { value: value }
+    pure new(value: integer) => { value: value }
 }
 
 object Sub: Super {
 
-    func subValue() => self.subValue
+    pure subValue() => self.subValue
 
 data:
     subValue: integer
 
 factory:
-    func init(subValue: integer) => {
+    pure init(subValue: integer) => {
         // super.new(value: superValue)
         subValue: subValue
     }

@@ -4,7 +4,8 @@ struct ObjectDeclaration {
     var name: Located<String>
     var isAbstract: Bool
     var supertype: Located<String>?
-    var methods: [FunctionDeclaration] = []
+    var pureMethods: [FunctionDeclaration] = []
+    var mutatingMethods: [FunctionDeclaration] = []
     var fields: [VariableDeclaration] = []
     var factoryMethods: [FunctionDeclaration] = []
     var staticSection: StaticSection?
@@ -50,8 +51,7 @@ extension ObjectDeclaration: StatementParseable {
         _ = try stream.next().requiring { $0.value == "{" }
 
         while let t = stream.peek(), !sectionEnders.contains(t.value) {
-            var method = try FunctionDeclaration(parsing: stream)
-            method.isPure = true
+            let method = try FunctionDeclaration(parsing: stream)
             pureMethods.append(method)
         }
 
@@ -126,13 +126,12 @@ extension ObjectDeclaration: StatementParseable {
         }
         _ = try stream.next().requiring { $0.value == "}" }
 
-        pureMethods.append(contentsOf: mutatingMethods ?? [])
-
         self.init(
             name: (nameToken.value, location: nameToken.location),
             isAbstract: isAbstract,
             supertype: supertype,
-            methods: pureMethods ?? [],
+            pureMethods: pureMethods,
+            mutatingMethods: mutatingMethods ?? [],
             fields: dataFields ?? [],
             factoryMethods: factoryMethods ?? [],
             staticSection: staticSection,
@@ -140,6 +139,9 @@ extension ObjectDeclaration: StatementParseable {
     }
 
     func resolveObject(in scope: Scope) throws -> Object {
+
+        let impureMethods = pureMethods.filter { !$0.isPure }
+        guard impureMethods.isEmpty else { throw ParserError.impureMethods(impureMethods.map { $0.name }) }
 
         let result = Object(name: name.value, isAbstract: isAbstract, supertype: scope.resolve(typeNamed: supertype))
         result.fields = try fields.map { try $0.resolveVariable(in: scope) }
@@ -157,7 +159,8 @@ extension ObjectDeclaration: StatementParseable {
         let objectScope = Scope(parent: scope, parameters: [Variable(name: "self", semantics: .immutable, type: .object(result))])
         objectScope.register(type: result)
 
-        result.methods = try methods.map { try $0.resolveFunction(in: objectScope) }
+        result.methods = try mutatingMethods.map { try $0.resolveFunction(in: objectScope) }
+        result.methods.append(contentsOf: try pureMethods.map { try $0.resolveFunction(in: objectScope) })
         result.factoryMethods = try factoryMethods.map { try $0.resolveFunction(in: objectScope) }
 
         return result
