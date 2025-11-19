@@ -140,13 +140,18 @@ extension ObjectDeclaration: StatementParseable {
 
     func resolveObject(in scope: Scope) throws -> Object {
 
-        var companionObject = CompanionObject(name: "\(name.value).static")
-        companionObject.fields = try (staticSection?.fields ?? []).map { try $0.resolveVariable(in: scope) }
-        scope.register(type: companionObject)
-        scope.register(variable: Variable(name: name.value, semantics: .immutable, type: .companionObject(companionObject)))
-
         var result = Object(name: name.value, isAbstract: isAbstract, supertype: scope.resolve(typeNamed: supertype))
         result.fields = try fields.map { try $0.resolveVariable(in: scope) }
+
+        if let staticSection {
+            var companionObject = CompanionObject(name: "\(name.value).static")
+            companionObject.fields = try staticSection.fields.map { try $0.resolveVariable(in: scope) }
+            scope.register(type: companionObject)
+            scope.register(variable: Variable(name: name.value, semantics: .immutable, type: .companionObject(companionObject)))
+
+            companionObject.methods = try staticSection.methods.map { try $0.resolveFunction(in: scope) }
+            result.companion = companionObject
+        }
 
         let objectScope = Scope(parent: scope, parameters: [Variable(name: "self", semantics: .immutable, type: .object(result))])
         objectScope.register(type: result)
@@ -154,11 +159,6 @@ extension ObjectDeclaration: StatementParseable {
         result.pureMethods = try pureMethods.map { try $0.resolveFunction(in: objectScope) }
         result.mutatingMethods = try mutatingMethods.map { try $0.resolveFunction(in: objectScope) }
         result.factoryMethods = try factoryMethods.map { try $0.resolveFunction(in: objectScope) }
-
-        companionObject.methods = try (staticSection?.methods ?? []).map { try $0.resolveFunction(in: scope) }
-        if companionObject.fields.count > 0 || companionObject.methods.count > 0 {
-            result.companion = companionObject
-        }
 
         return result
     }
