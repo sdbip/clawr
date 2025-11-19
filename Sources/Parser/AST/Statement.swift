@@ -67,7 +67,7 @@ public struct Function: Equatable {
     }
 }
 
-public struct DataStructure: Equatable {
+public class DataStructure {
     public var name: String
     public var fields: [Variable]
     public var companion: CompanionObject?
@@ -79,7 +79,15 @@ public struct DataStructure: Equatable {
     }
 }
 
-public struct Object: Equatable {
+extension DataStructure: Equatable {
+    public static func == (lhs: DataStructure, rhs: DataStructure) -> Bool {
+        return lhs.name == rhs.name &&
+            lhs.fields == rhs.fields &&
+            lhs.companion == rhs.companion
+    }
+}
+
+public class Object {
     public var name: String
     public var isAbstract: Bool
     public var supertype: Indirect<ResolvedType>?
@@ -110,7 +118,20 @@ public struct Object: Equatable {
     }
 }
 
-public struct CompanionObject: Equatable {
+extension Object: Equatable {
+    public static func == (lhs: Object, rhs: Object) -> Bool {
+        return lhs.name == rhs.name &&
+            lhs.isAbstract == rhs.isAbstract &&
+            lhs.supertype == rhs.supertype &&
+            lhs.pureMethods == rhs.pureMethods &&
+            lhs.mutatingMethods == rhs.mutatingMethods &&
+            lhs.fields == rhs.fields &&
+            lhs.factoryMethods == rhs.factoryMethods &&
+            lhs.companion == rhs.companion
+    }
+}
+
+public class CompanionObject {
     public var name: String
     public var fields: [Variable]
     public var methods: [Function]
@@ -119,5 +140,13 @@ public struct CompanionObject: Equatable {
         self.name = name
         self.fields = fields
         self.methods = methods
+    }
+}
+
+extension CompanionObject: Equatable {
+    public static func == (lhs: CompanionObject, rhs: CompanionObject) -> Bool {
+        return lhs.name == rhs.name &&
+			lhs.fields == rhs.fields &&
+        	lhs.methods == rhs.methods
     }
 }

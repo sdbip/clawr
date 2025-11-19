@@ -150,7 +150,7 @@ struct ObjectDeclarationTests {
         #expect(expr == .memberLookup(.member(
             .expression(.identifier(
                 "self",
-                type: .object(Object(name: "S", fields: [Variable(name: "answer", semantics: .immutable, type: .builtin(.integer))]))
+                type: .object(object)
             )),
             member: "answer",
             type: .builtin(.integer)
@@ -173,12 +173,16 @@ struct ObjectDeclarationTests {
     func factory_methods() async throws {
         let source = "object S { factory: func new() => {} }"
         let ast = try parse(source)
-        #expect(ast == [.objectDeclaration(Object(
-            name: "S",
-            factoryMethods: [
-                Function(name: "new", returnType: .object(Object(name: "S")), parameters: [], body: [.returnStatement(.dataStructureLiteral(.object(Object(name: "S")), fieldValues: [:]))]),
-            ],
-        ))])
+        guard case .objectDeclaration(let object) = ast.first else { Issue.record("Expected object declaration in \(ast)"); return }
+        #expect(object.name == "S")
+        #expect(object.factoryMethods == [
+            Function(
+                name: "new",
+                returnType: .object(object),
+                parameters: [],
+                body: [.returnStatement(.dataStructureLiteral(.object(object), fieldValues: [:]))]
+            ),
+        ])
     }
 
     @Test
@@ -200,14 +204,12 @@ struct ObjectDeclarationTests {
             """
         let ast = try parse(source)
         guard case .objectDeclaration(let object) = ast.first else { Issue.record("Expected an object from \(ast)"); return }
+        guard let companion = object.companion else { Issue.record("Expected a companion object from \(object)"); return }
         guard case .returnStatement(let stmt) = object.companion?.methods.first?.body.first else { Issue.record("Expected an return statement in \(object.companion?.methods.first)"); return }
         #expect(stmt == .memberLookup(.member(
             .expression(.identifier(
                 "S",
-                type: .companionObject(CompanionObject(
-                    name: "S.static",
-                    fields: [Variable(name: "answer", semantics: .immutable, type: .builtin(.integer))]
-                ))
+                type: .companionObject(companion)
             )),
             member: "answer",
             type: .builtin(.integer)
