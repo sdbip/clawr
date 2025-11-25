@@ -33,27 +33,7 @@ extension UnresolvedExpression {
 
     static func parse(stream: TokenStream) throws -> UnresolvedExpression {
         let expression = try expression(parsing: stream)
-        return try lookup(current: expression)
-
-        func lookup(current: UnresolvedExpression) throws -> UnresolvedExpression {
-            guard stream.peek()?.value == "." else { return current }
-            _ = stream.next()
-
-            if FunctionCall.isNext(in: stream) {
-                return try lookup(current: .methodCall(MethodCall(
-                    target: current,
-                    functionCall: FunctionCall(parsing: stream)
-                )))
-            } else {
-                let memberToken = try stream.next().requiring { $0.kind == .identifier }
-                return try lookup(current: .memberLookup(
-                    current,
-                    member: memberToken.value,
-                    location: memberToken.location
-                ))
-            }
-
-        }
+        return try parse(memberOf: expression, in: stream)
     }
 
     static func expression(parsing stream: TokenStream, precedence p: Int = 0) throws -> UnresolvedExpression {
@@ -119,6 +99,31 @@ extension UnresolvedExpression {
 
         default:
             throw ParserError.invalidToken(token)
+        }
+    }
+
+    static func parse(memberOf current: UnresolvedExpression, in stream: TokenStream) throws -> UnresolvedExpression {
+        guard stream.peek()?.value == "." else { return current }
+        _ = stream.next()
+
+        if FunctionCall.isNext(in: stream) {
+            return try parse(
+                memberOf: .methodCall(MethodCall(
+                    target: current,
+                    functionCall: FunctionCall(parsing: stream)
+                )),
+                in: stream
+            )
+        } else {
+            let memberToken = try stream.next().requiring { $0.kind == .identifier }
+            return try parse(
+                memberOf: .memberLookup(
+                    current,
+                    member: memberToken.value,
+                    location: memberToken.location
+                ),
+                in: stream
+            )
         }
     }
 
