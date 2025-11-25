@@ -40,28 +40,7 @@ extension UnresolvedExpression {
                 _ = stream.next()
                 let memberToken = try stream.next().requiring { $0.kind == .identifier }
                 if stream.peek()?.value == "(" {
-                    _ = stream.next()
-                    var arguments: [Labeled<UnresolvedExpression>] = []
-                    while stream.peek()?.value != ")" {
-                        let clone = stream.clone()
-                        _ = clone.next()
-                        if clone.peek()?.value == ":" {
-                            let label = try stream.next().requiring { $0.kind == .identifier }.value
-                            _ = stream.next() // consume ':'
-                            let expression = try UnresolvedExpression.parse(stream: stream)
-                            arguments.append(.labeled(expression, label: label))
-                        } else {
-                            let expression = try UnresolvedExpression.parse(stream: stream)
-                            arguments.append(.unlabeled(expression))
-                        }
-
-                        if stream.peek()?.value == "," {
-                            _ = stream.next()
-                        } else {
-                            break
-                        }
-                    }
-                    _ = try stream.next().requiring { $0.value == ")" }
+                    let arguments = try FunctionCall.parseArguments(in: stream)
                     return try lookup(current: .methodCall(MethodCall(
                         target: current,
                         functionCall: FunctionCall(

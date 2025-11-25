@@ -27,7 +27,13 @@ extension FunctionCall: StatementParseable {
     init(parsing stream: TokenStream) throws {
         let nameToken = try stream.next().requiring { $0.kind == .identifier }
         let name = nameToken.value
-        _ = try stream.next().requiring { $0.value == "("}
+        let arguments = try Self.parseArguments(in: stream)
+        self.init(function: (name, location: nameToken.location), arguments: arguments)
+    }
+
+    static func parseArguments(in stream: TokenStream) throws -> [Labeled<UnresolvedExpression>] {
+        _ = try stream.next().requiring { $0.value == "(" }
+
         var arguments: [Labeled<UnresolvedExpression>] = []
         while stream.peek()?.value != ")" {
             let clone = stream.clone()
@@ -49,6 +55,6 @@ extension FunctionCall: StatementParseable {
             }
         }
         _ = try stream.next().requiring { $0.value == ")" }
-        self.init(function: (name, location: nameToken.location), arguments: arguments)
+        return arguments
     }
 }
