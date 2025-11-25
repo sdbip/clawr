@@ -192,16 +192,16 @@ extension UnresolvedExpression {
             switch scope.resolve(typeNamed: (declaredType, location)) {
             case .data(let dataType):
                 let fieldValues = try literal.fieldValues.map { (key, value) in
-                    let field = dataType.fields.first { $0.name == key }
+                    guard let field = dataType.fields.first(where: { $0.name == key }) else { throw ParserError.unknownVariable(key, location) }
                     // TODO: This converts the already resolved type back to String to be resolved again
-                    return (key, try value.resolve(in: scope, declaredType: field?.type.name))
+                    return (key, try value.resolve(in: scope, declaredType: field.type.name))
                 }
                 return .dataStructureLiteral(.data(dataType), fieldValues: Dictionary(uniqueKeysWithValues: fieldValues))
             case .object(let objectType):
                 let fieldValues = try literal.fieldValues.map { (key, value) in
-                    let field = objectType.fields.first { $0.name == key }
+                    guard let field = objectType.fields.first(where: { $0.name == key }) else { throw ParserError.unknownVariable(key, location) }
                     // TODO: This converts the already resolved type back to String to be resolved again
-                    return (key, try value.resolve(in: scope, declaredType: field?.type.name))
+                    return (key, try value.resolve(in: scope, declaredType: field.type.name))
                 }
                 return .dataStructureLiteral(.object(objectType), fieldValues: Dictionary(uniqueKeysWithValues: fieldValues))
             default:
