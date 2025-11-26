@@ -13,7 +13,7 @@ enum FunctionBody {
     case multipleStatements([UnresolvedStatement])
 }
 
-extension FunctionDeclaration: StatementParseable {
+extension FunctionDeclaration: ParseableStatement {
     static func isNext(in stream: TokenStream) -> Bool {
         guard let token = stream.peek() else { return false }
         return ["func", "pure"].contains(token.value)

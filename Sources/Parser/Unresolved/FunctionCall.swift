@@ -15,7 +15,7 @@ struct MethodCall {
     var functionCall: FunctionCall
 }
 
-extension FunctionCall: StatementParseable {
+extension FunctionCall: ParseableStatement {
     static func isNext(in stream: TokenStream) -> Bool {
         let clone = stream.clone()
         _ = clone.next()

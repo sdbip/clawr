@@ -7,7 +7,7 @@ struct VariableDeclaration {
     var initializer: UnresolvedExpression?
 }
 
-extension VariableDeclaration: StatementParseable {
+extension VariableDeclaration: ParseableStatement {
     static func isNext(in stream: TokenStream) -> Bool {
         guard let token = stream.peek() else { return false }
         return Semantics(rawValue: token.value) != nil

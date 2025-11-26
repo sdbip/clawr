@@ -10,7 +10,7 @@ public func parse(_ source: String) throws -> [Statement] {
 }
 
 func parse(_ stream: TokenStream) throws -> [UnresolvedStatement] {
-    let parseables: [StatementParseable.Type] = [
+    let parseables: [ParseableStatement.Type] = [
         PrintStatement.self,
         VariableDeclaration.self,
         DataStructureDeclaration.self,

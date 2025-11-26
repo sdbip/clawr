@@ -11,7 +11,7 @@ struct ObjectDeclaration {
     var staticSection: StaticSection?
 }
 
-extension ObjectDeclaration: StatementParseable {
+extension ObjectDeclaration: ParseableStatement {
     var asStatement: UnresolvedStatement {
         return .objectDeclaration(self)
     }

@@ -4,7 +4,7 @@ struct PrintStatement {
     var expression: UnresolvedExpression
 }
 
-extension PrintStatement: StatementParseable {
+extension PrintStatement: ParseableStatement {
     static func isNext(in stream: TokenStream) -> Bool {
         return stream.peek()?.value == "print"
     }

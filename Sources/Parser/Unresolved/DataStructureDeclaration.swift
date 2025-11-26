@@ -6,7 +6,7 @@ struct DataStructureDeclaration {
     var staticSection: StaticSection?
 }
 
-extension DataStructureDeclaration: StatementParseable {
+extension DataStructureDeclaration: ParseableStatement {
     static func isNext(in stream: TokenStream) -> Bool {
         return stream.peek()?.value == "data"
     }
