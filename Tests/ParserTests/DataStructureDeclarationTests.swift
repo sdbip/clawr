@@ -166,4 +166,60 @@ struct DataStructureDeclarationTests {
         #expect(data.name == "S_static")
         #expect(member == "answer")
     }
+
+    @Test
+    func inline_anonymous_nested_structures() async throws {
+        let source = """
+        data LogInfo {
+            position: { latitude: real, longitude: real }
+            velocity: { heading: real, speed: real }
+        }
+        """
+
+        let ast = try parse(source)
+        // Expect three data declarations in IR order after resolution:
+        // 1) LogInfo$position
+        // 2) LogInfo$velocity
+        // 3) LogInfo
+        // However, parse() returns resolved statements in the order they were declared at top-level.
+        // Our parser synthesizes nested declarations internally; they are registered in Scope during resolution
+        // but not emitted as separate top-level declarations. We therefore inspect the top-level LogInfo only
+        // and verify its fields are typed to the synthesized nested types.
+
+        #expect(ast.count == 1)
+        guard case .dataStructureDeclaration(let logInfo) = ast.first else {
+            Issue.record("Expected a data structure declaration")
+            return
+        }
+        #expect(logInfo.name == "LogInfo")
+        #expect(logInfo.fields.count == 2)
+
+        let pos = logInfo.fields.first { $0.name == "position" }
+        let vel = logInfo.fields.first { $0.name == "velocity" }
+        let posTypeName = pos?.type.name
+        let velTypeName = vel?.type.name
+
+        #expect(posTypeName == "LogInfo$position")
+        #expect(velTypeName == "LogInfo$velocity")
+
+        // Verify nested types were registered and their fields resolved correctly by constructing literals
+        // and ensuring field lookup types match.
+        // Create a small function that returns position.latitude to force resolution of nested field access.
+        let source2 = """
+        data LogInfo {
+            position: { latitude: real, longitude: real }
+        }
+        pure getLatitude(pos: LogInfo$position) => pos.latitude
+        """
+        let ast2 = try parse(source2)
+        #expect(ast2.count == 2)
+        guard case .functionDeclaration(let fn) = ast2.last else {
+            Issue.record("Expected a function declaration")
+            return
+        }
+        #expect(fn.name == "getLatitude")
+        #expect(fn.parameters.count == 1)
+        #expect(fn.parameters.first?.value.type.name == "LogInfo$position")
+        #expect(fn.returnType?.name == "real")
+    }
 }

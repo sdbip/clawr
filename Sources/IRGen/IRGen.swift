@@ -1,6 +1,8 @@
 import Parser
 import Codegen
 
+nonisolated(unsafe) private var __emittedDataStructures = Set<String>()
+
 public func irgen(ast: [Parser.Statement]) -> [Codegen.Statement] {
     let statements = irgen(statements: ast)
     var functions = statements.filter {
@@ -52,6 +54,20 @@ public func irgen(statement: Parser.Statement) -> [Codegen.Statement] {
         )
         // TODO: Add methods and factories
     case .dataStructureDeclaration(let dataStructure):
+        // Skip if we already emitted this structure
+        if __emittedDataStructures.contains(dataStructure.name) {
+            return []
+        }
+        __emittedDataStructures.insert(dataStructure.name)
+
+        // Emit nested data structures first; rely on the global set for de-dup
+        for field in dataStructure.fields {
+            if case .data(let nested) = field.type {
+                result.append(contentsOf: irgen(statement: .dataStructureDeclaration(nested)))
+            }
+        }
+
+        // Now emit this data structure and its metadata (unchanged below)
         if let companion = dataStructure.companion {
             result.append(.structDeclaration(
                 "__\(dataStructure.name)_static",
