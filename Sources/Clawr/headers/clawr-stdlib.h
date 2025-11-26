@@ -76,7 +76,7 @@ typedef uint64_t bitfield;
 static inline string* const bitfield_toString(bitfield const self) {
     // Hex representation without underscores
     char buffer[22];
-    sprintf(buffer, "%018#" PRIx64, self);
+    sprintf(buffer, "0x%016" PRIx64, self);
 
     // Move three groups of four digits leaving one space between
     memmove(buffer + 17, buffer + 14, 4);
