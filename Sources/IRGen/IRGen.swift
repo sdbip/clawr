@@ -5,14 +5,14 @@ public func irgen(ast: [Parser.Statement]) -> [Codegen.Statement] {
     let statements = irgen(statements: ast)
     var functions = statements.filter {
         switch $0 {
-        case .function(_): true
+        case .function: true
         default: false
         }
     }
 
     let nonFunctions = statements.filter {
         switch $0 {
-        case .function(_): false
+        case .function: false
         default: true
         }
     }
