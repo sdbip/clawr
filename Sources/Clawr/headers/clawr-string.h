@@ -31,13 +31,12 @@ static inline string* string_toString(void* self) {
 static const HasStringRepresentation_vtable string_HasStringRepresentation_vtable = {
     .toString = string_toString
 };
-static __clawr_data_type __string_data_type = {
+static __clawr_type_info __string_info = {
     .size = sizeof(string),
     .trait_descs = (__clawr_trait_descriptor*[]) { &HasStringRepresentation_trait },
     .trait_vtables = (void*[]) { &string_HasStringRepresentation_vtable },
     .trait_count = 1,
 };
-static __clawr_type_info __string_info = { .data = &__string_data_type };
 
 static inline string* string_format(const char* const format, ...) {
     va_list args;
@@ -45,8 +44,8 @@ static inline string* string_format(const char* const format, ...) {
 
     // Determine the required buffer size
     int length = vsnprintf(NULL, 0, format, args) + 1;
-    string* s = (string*) __clawr_alloc(__string_data_type.size + length);
-    s->header.is_a = __string_info;
+    string* s = (string*) __clawr_alloc(__string_info.size + length);
+    s->header.is_a = &__string_info;
     atomic_init(&s->header.refs, __clawr_ISOLATED | 1);
 
     // Format the string into the buffer

@@ -62,40 +62,6 @@ typedef struct {
     void** trait_vtables;
     size_t trait_count;
 
-} __clawr_data_type;
-
-/// @brief Information about an entity’s type (`data` or `object`)
-/// This should include:
-/// - inheritance and conformance information
-/// - method lookup table if `object` type
-/// - field layout info if `data` type
-typedef struct {
-
-    /// @brief The size of the entity payload for this type
-    size_t size;
-
-    /// @brief Parallel arrays describing implemented traits for this type.
-    /// `trait_descs[i]` is a pointer to the compile-time `__clawr_trait_descriptor` for a trait
-    /// and `trait_vtables[i]` is the vtable implementation for that trait for this type.
-    const __clawr_trait_descriptor** trait_descs;
-    void** trait_vtables;
-    size_t trait_count;
-
-    // ----- Replicate __clawr_data_type above this line ------ //
-
-    /// @brief A vtable is used to look up functions (methods) that can be overridden
-    /// if a method is non-overridable, it should be referenced directly instead.
-    void* vtable;
-
-    /// @brief The `object` supertype of this `object` type.
-    /// Must be `NULL` for `data` types
-    struct __clawr_object_type* super;
-
-} __clawr_object_type;
-
-typedef union {
-    __clawr_data_type* data;
-    __clawr_object_type* object;
 } __clawr_type_info;
 
 /// A header that is prefixed on all programmer types
@@ -103,7 +69,7 @@ typedef struct {
     /// @brief Reference counter and semantics flags (COPYING | ISOLATED | refcounter)
     atomic_uintptr_t refs;
     /// @brief Pointer to type data
-    __clawr_type_info is_a;
+    __clawr_type_info* is_a;
 } __clawr_rc_header;
 
 // -------- Implementation -------- ||
@@ -114,12 +80,12 @@ typedef struct {
 /// @return the vtable pointer for the trait if implemented, otherwise NULL
 static inline void* __clawr_trait_vtable(__clawr_rc_header* header, const __clawr_trait_descriptor* trait) {
     if (!header || !trait) return NULL;
-    __clawr_type_info typeInfo = header->is_a;
-    if (!typeInfo.data || !typeInfo.data->trait_descs || !typeInfo.data->trait_vtables) return NULL;
+    __clawr_type_info* typeInfo = header->is_a;
+    if (!typeInfo->trait_descs || !typeInfo->trait_vtables) return NULL;
 
-    for (size_t i = 0; i < typeInfo.data->trait_count; i++) {
-        if (typeInfo.data->trait_descs[i] == trait) {
-            return typeInfo.data->trait_vtables[i];
+    for (size_t i = 0; i < typeInfo->trait_count; i++) {
+        if (typeInfo->trait_descs[i] == trait) {
+            return typeInfo->trait_vtables[i];
         }
     }
     return NULL;
@@ -138,8 +104,8 @@ static inline void* __clawr_alloc(size_t size) {
 /// @brief Allocate reference-counted entity in memory
 /// @param semantics the semantics, copy or reference, to apply when assigning and modifying the entity
 /// @param typeInfo pointer to an object that represents the entity’s type
-static inline void* allocRC(__clawr_type_info const typeInfo, uintptr_t const semantics) {
-    __clawr_rc_header* const header = (__clawr_rc_header*)__clawr_alloc(typeInfo.data->size);
+static inline void* allocRC(__clawr_type_info* const typeInfo, uintptr_t const semantics) {
+    __clawr_rc_header* const header = (__clawr_rc_header*)__clawr_alloc(typeInfo->size);
     header->is_a = typeInfo;
     atomic_init(&header->refs, semantics | 1);
     return header;
@@ -202,9 +168,9 @@ static inline void* isolateRC(__clawr_rc_header* const header) {
     }
 
     // Copy payload for copy semantics with shared ownership
-    __clawr_type_info const typeInfo = header->is_a;
-    __clawr_rc_header* const newEntity = (__clawr_rc_header*)__clawr_alloc(typeInfo.data->size);
-    memcpy(newEntity, header, typeInfo.data->size);
+    __clawr_type_info* const typeInfo = header->is_a;
+    __clawr_rc_header* const newEntity = (__clawr_rc_header*)__clawr_alloc(typeInfo->size);
+    memcpy(newEntity, header, typeInfo->size);
 
     // Preserve semantics flag on the new entity; start with unique refcount 1
     atomic_init(&newEntity->refs, (refs & __clawr_ISOLATION_FLAG) | 1);

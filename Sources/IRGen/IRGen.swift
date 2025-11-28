@@ -114,17 +114,10 @@ public func irgen(statement: Parser.Statement) -> [Codegen.Statement] {
 
         ))
         result.append(.variable(
-            "__\(dataStructure.name)_data_type",
-            type: "__clawr_data_type",
-            initializer: .structInitializer([
-                NamedValue(name: "size", value: .call(.name("sizeof"), arguments: [.reference(.name(dataStructure.name))]))
-            ])
-        ))
-        result.append(.variable(
             "__\(dataStructure.name)_info",
             type: "__clawr_type_info",
             initializer: .structInitializer([
-                NamedValue(name: "data", value: .reference(.address(of: .name("__\(dataStructure.name)_data_type"))))
+                NamedValue(name: "size", value: .call(.name("sizeof"), arguments: [.reference(.name(dataStructure.name))]))
             ])
         ))
     case .functionDeclaration(let function):
@@ -205,7 +198,7 @@ func irgen(expression: Parser.Expression) -> Codegen.Expression {
         default: fatalError("Calling methods from \(target.type) in unsupported")
         }
     case .dataStructureLiteral(let type, fieldValues: _):
-        return .call(.name("allocRC"), arguments: [.reference(.name("__\(type.name)_info")), .reference(.name("__clawr_ISOLATED"))])
+        return .call(.name("allocRC"), arguments: [.reference(.address(of: .name(("__\(type.name)_info")))), .reference(.name("__clawr_ISOLATED"))])
     case .unaryOperation(operator: let op, expression: let expression): fatalError("Operators not yet implemented")
     case .binaryOperation(left: let left, operator: .leftShift, right: let right):
         return .call(.name("leftShift"), arguments: [irgen(expression: left), irgen(expression: right)])

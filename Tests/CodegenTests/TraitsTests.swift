@@ -45,7 +45,7 @@ struct TraitsTests {
                                             name: "value",
                                             isPointer: false),
                                     ),
-                                    .literal("__integer_box_info"),
+                                    .reference(.address(of: .name("__integer_box_info"))),
                                 ]
                             )
                         ),
@@ -93,8 +93,8 @@ struct TraitsTests {
                     ])
                 ),
                 .variable(
-                    "__Struct_data_type",
-                    type: "__clawr_data_type",
+                    "__Struct_info",
+                    type: "__clawr_type_info",
                     initializer: .structInitializer([
                         NamedValue(name: "size", value: .call(.name("sizeof"), arguments: [.reference(.name("Struct"))])),
                         NamedValue(
@@ -112,13 +112,6 @@ struct TraitsTests {
                         NamedValue(name: "trait_count", value: .literal("1"))
                     ])
                 ),
-                .variable(
-                    "__Struct_info",
-                    type: "__clawr_type_info",
-                    initializer: .structInitializer([
-                        NamedValue(name: "data", value: .reference(.address(of: .name("__Struct_data_type")))),
-                    ])
-                ),
                 exec([
                     .variable(
                         "x",
@@ -126,7 +119,7 @@ struct TraitsTests {
                         initializer: .call(
                             .name("allocRC"),
                             arguments: [
-                                .literal("__Struct_info"),
+                                .reference(.address(of: .name("__Struct_info"))),
                                 .literal("__clawr_ISOLATED"),
                             ]
                         )

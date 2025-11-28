@@ -12,7 +12,7 @@ typedef struct
     uintptr_t boxed;
 } box;
 
-box* __clawr_make_box(uintptr_t value, __clawr_type_info type) {
+box* __clawr_make_box(uintptr_t value, __clawr_type_info* type) {
     box* b = allocRC(type, __clawr_ISOLATED);
     b->boxed = value;
     return b;
@@ -33,13 +33,12 @@ static const HasStringRepresentation_vtable integer_HasStringRepresentation_vtab
     .toString = integer_box_toString
 };
 
-static __clawr_data_type __integer_box_data_type = {
+static __clawr_type_info __integer_box_info = {
     .size = sizeof(box),
     .trait_descs = (__clawr_trait_descriptor*[]) { &HasStringRepresentation_trait },
     .trait_vtables = (void*[]) { &integer_HasStringRepresentation_vtable },
     .trait_count = 1
 };
-static const __clawr_type_info __integer_box_info = { .data = &__integer_box_data_type };
 
 typedef double real;
 
@@ -60,13 +59,12 @@ static const HasStringRepresentation_vtable real_HasStringRepresentation_vtable 
     .toString = real_box_toString
 };
 
-static __clawr_data_type __real_box_data_type = {
+static __clawr_type_info __real_box_info = {
     .size = sizeof(box),
     .trait_descs = (__clawr_trait_descriptor*[]) { &HasStringRepresentation_trait },
     .trait_vtables = (void*[]) { &real_HasStringRepresentation_vtable },
     .trait_count = 1
 };
-static const __clawr_type_info __real_box_info = { .data = &__real_box_data_type };
 
 typedef uint64_t bitfield;
 
@@ -94,13 +92,12 @@ static const HasStringRepresentation_vtable bitfield_HasStringRepresentation_vta
     .toString = bitfield_box_toString
 };
 
-static const __clawr_data_type __bitfield_box_data_type = {
+static const __clawr_type_info __bitfield_box_info = {
     .size = sizeof(box),
     .trait_descs = (__clawr_trait_descriptor*[]) { &HasStringRepresentation_trait },
     .trait_vtables = (void*[]) { &bitfield_HasStringRepresentation_vtable },
     .trait_count = 1
 };
-static const __clawr_type_info __bitfield_box_info = { .data = &__bitfield_box_data_type };
 
 static inline bitfield leftShift(bitfield const self, integer const steps) {
     return self << steps;
