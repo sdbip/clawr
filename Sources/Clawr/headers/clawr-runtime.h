@@ -45,6 +45,8 @@ typedef struct {
 /// @brief Flag to indicate structural semantics for a type.
 static const uintptr_t __clawr_INHERITANCE_FLAG = (uintptr_t)1 << (sizeof(uintptr_t) * 8 - 1);
 
+struct __clawr_rc_header;
+
 /// @brief Information about an entity’s type (`data` or `object`)
 /// This should include:
 /// - inheritance and conformance information
@@ -54,6 +56,13 @@ typedef struct {
 
     /// @brief The size of the entity payload for this type, and its semantics
     uintptr_t size;
+
+    /// @brief Abstract method that is called by copy-on-write.
+    /// Implementation should call retainRC() on all nested structures.
+    void (*retain_nested_fields)(struct __clawr_rc_header* self);
+    /// @brief Abstract method that is called by copy-on-write.
+    /// Implementation should call releaseRC() on all nested structures.
+    void (*release_nested_fields)(struct __clawr_rc_header* self);
 
     /// @brief Parallel arrays describing implemented traits for this type.
     /// `trait_descs[i]` is a pointer to the compile-time `__clawr_trait_descriptor` for a trait
@@ -111,10 +120,22 @@ static inline void* allocRC(__clawr_type_info* const typeInfo, uintptr_t const s
     return header;
 }
 
+static inline void __retainNestedFields(__clawr_rc_header* header) {
+    if (header->is_a->retain_nested_fields)
+        header->is_a->retain_nested_fields(header);
+}
+
+static inline void __releaseNestedFields(__clawr_rc_header* header) {
+    void (*release_nested_fields)(struct __clawr_rc_header* self);
+    release_nested_fields = header->is_a->release_nested_fields;
+    if (release_nested_fields) release_nested_fields(header);
+}
+
 /// @brief Increment a reference counter
 /// @param header the header of the entity to retain
 static inline __clawr_rc_header* retainRC(__clawr_rc_header* const header) {
-    if (header) atomic_fetch_add_explicit(&header->refs, 1, memory_order_relaxed);
+    if (!header) return NULL;
+    atomic_fetch_add_explicit(&header->refs, 1, memory_order_relaxed);
     return header;
 }
 
@@ -123,7 +144,9 @@ static inline __clawr_rc_header* retainRC(__clawr_rc_header* const header) {
 /// @param header the header of the entity to release
 /// @returns `NULL` so that the variable can be assigned to the function call.
 static inline void* releaseRC(__clawr_rc_header* const header) {
-    if (header && (atomic_fetch_sub_explicit(&header->refs, 1, memory_order_acq_rel) & __clawr_REFC_BITMASK) == 1) {
+    if (!header) return NULL;
+    if ((atomic_fetch_sub_explicit(&header->refs, 1, memory_order_acq_rel) & __clawr_REFC_BITMASK) == 1) {
+        __releaseNestedFields(header);
         free(header);
     }
     return NULL;
@@ -174,6 +197,7 @@ static inline void* isolateRC(__clawr_rc_header* const header) {
 
     // Preserve semantics flag on the new entity; start with unique refcount 1
     atomic_init(&newEntity->refs, (refs & __clawr_ISOLATION_FLAG) | 1);
+    __retainNestedFields(header);
 
     // Finished copying. Drop our strong ref to the original entity and unset the flag.
     atomic_fetch_and_explicit(&header->refs, ~__clawr_COPYING_FLAG, memory_order_acquire);
